@@ -4,12 +4,12 @@ LIBS_DIR    := -L$(PREFIX)/lib64
 LIBS        := -lcrypto -lssl -lz -pthread -ldl
 
 VALGRIND    := valgrind -v \
-	       --leak-check=full \
-	       --gen-suppressions=yes \
-	       --suppressions=.valgrind.supp \
-	       --show-reachable=yes \
-	       --track-origins=yes \
-	       --log-file=valgrind.log
+  --leak-check=full \
+  --gen-suppressions=yes \
+  --suppressions=.valgrind.supp \
+  --show-reachable=yes \
+  --track-origins=yes \
+  --log-file=valgrind.log
 
 SRCS := \
 	libec.c \
