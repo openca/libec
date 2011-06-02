@@ -1,0 +1,287 @@
+{
+	OpenSSL Generic Cond
+	Memcheck:Cond
+	...
+	obj:*libcrypto*
+}
+
+{
+	SSE Memcmp
+	Memcheck:Cond
+	fun:__memcmp_sse4_1
+	...
+}
+
+{
+	System printf Value8
+	Memcheck:Value8
+	...
+	fun:vfprintf
+	...
+}
+
+{
+	System printf Cond
+	Memcheck:Cond
+	...
+	fun:vfprintf
+	...
+}
+
+{
+	OpenSSL Generic Value8
+	Memcheck:Value8
+	...
+	obj:*libcrypto*
+}
+
+{
+	OpenSSL BN Leak
+	Memcheck:Leak
+	...
+	fun:BN_new
+	...
+}
+
+{
+	OpenSSL RSA Gen
+	Memcheck:Param
+	...
+	fun:RSA_generate_key_ex
+	...
+}
+
+{
+	OpenSSL ASN1 d2i
+	Memcheck:Leak
+	fun:malloc
+	fun:CRYPTO_malloc
+	fun:lh_insert
+	fun:int_thread_set_item
+	fun:ERR_get_state
+	fun:ERR_put_error
+	fun:asn1_d2i_ex_primitive
+	fun:ASN1_item_ex_d2i
+	fun:ASN1_item_d2i
+	...
+}
+
+{
+	OpenSSL ASN1 d2i BIO
+	Memcheck:Leak
+	fun:malloc
+	fun:CRYPTO_malloc
+	...
+	fun:asn1_d2i_read_bio.constprop.0
+	fun:ASN1_d2i_bio
+	...
+}
+
+{
+	OpenSSL d2i_PUBKEY
+	Memcheck:Leak
+	fun:malloc
+	...
+	fun:X509_PUBKEY_get
+	fun:d2i_PUBKEY
+	...
+}
+
+{
+	OpenSSL ASN1 d2i BIO 2
+	Memcheck:Leak
+	fun:malloc
+	fun:CRYPTO_malloc
+	fun:lh_new
+	fun:int_thread_get
+	fun:int_thread_set_item
+	fun:ERR_get_state
+	fun:ERR_clear_error
+	fun:asn1_d2i_read_bio.constprop.0
+	fun:ASN1_d2i_bio
+	fun:_privkey_decode
+	fun:LIBEC_KEY_decode_private
+	fun:memory_tests
+}
+
+{
+	Generic IO Param
+	Memcheck:Param
+	...
+	fun:save_data
+	...
+}
+
+{
+	OpenSSL EC Curve Leak
+	Memcheck:Leak
+	...
+	fun:EC_KEY_new_by_curve_name
+	...
+}
+
+{
+	OpenSSL EC Curve Leak
+	Memcheck:Leak
+	...
+	fun:EC_KEY_new_by_curve_name
+	...
+}
+
+{
+	OpenSSL EC Gen Curve Leak
+	Memcheck:Leak
+	...
+	fun:EC_KEY_generate_key
+	...
+}
+
+{
+	OpenSSL ERR Print Errors Leak
+	Memcheck:Leak
+	...
+	fun:ERR_print_errors_cb
+	...
+}
+
+{
+	OpenSSL EVP_MD_CTX_cleanup
+	Memcheck:Addr8
+	fun:EVP_MD_CTX_cleanup
+	...
+}
+
+{
+	OpenSSL HAMC_CTX_cleanup
+	Memcheck:Addr8
+	fun:HMAC_CTX_cleanup
+	...
+}
+
+{
+	OpenSSL HMAC CTX free
+	Memcheck:Free
+	...
+	fun:HMAC_CTX_free
+	...
+}
+
+{
+	LIBEC Crypto Init Leak
+	Memcheck:Leak
+	...
+	fun:LIBEC_init
+	...
+}
+
+{
+	LIBEC CTX cleanup Addr8
+	Memcheck:Addr8
+	...
+	fun:LIBEC_CTX_cleanup
+	...
+}
+
+{
+	LIBEC CTX free Addr8
+	Memcheck:Addr8
+	...
+	fun:LIBEC_CTX_free
+	...
+}
+
+
+{
+	LIBEC CTX free Free
+	Memcheck:Free
+	...
+	fun:LIBEC_CTX_free
+	...
+}
+
+{
+	LIBEC KEY Cleanup
+	Memcheck:Value8
+	fun:LIBEC_KEY_cleanup
+	...
+}
+
+{
+	LIBEC KEY Cleanup
+	Memcheck:Addr8
+	...
+	fun:LIBEC_KEY_cleanup
+	...
+}
+
+{
+	LIBEC KEY Free
+	Memcheck:Addr4
+	...
+	fun:LIBEC_KEY_free
+	...
+}
+
+{
+	LIBEC KEY Free
+	Memcheck:Addr1
+	...
+	fun:LIBEC_KEY_free
+	...
+}
+
+{
+	IO Write
+	Memcheck:Param
+	write(buf)
+	fun:__write_nocancel
+	fun:_IO_file_write@@GLIBC_2.2.5
+	fun:_IO_do_write@@GLIBC_2.2.5
+	fun:_IO_file_close_it@@GLIBC_2.2.5
+	fun:fclose@@GLIBC_2.2.5
+	fun:save_data
+	fun:memory_tests
+	fun:main
+}
+
+{
+	IO Write
+	Memcheck:Param
+	write(buf)
+	fun:__write_nocancel
+	...
+	fun:save_data
+	fun:crypto_tests
+	fun:main
+}
+
+{
+	BN Mem Leak
+	Memcheck:Leak
+	...
+	fun:bn_expand_internal
+	...
+}
+
+{
+	LIBEC Memcpy Cond
+	Memcheck:Cond
+	fun:memcpy
+	...
+}
+
+{
+   LIBEC Key Gen Cond
+	Memcheck:Cond
+	fun:_decrypt_key
+	fun:LIBEC_decrypt_init
+	...
+}
+
+{
+	Decrypt Init Sym
+	Memcheck:Cond
+	fun:_decrypt_init_sym
+	...
+}
+
