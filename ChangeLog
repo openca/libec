@@ -1,0 +1,17 @@
+* Jun  2 2011 Massimiliano Pala <madwolf@openca.org>
+- Added valgrind suppress config file
+
+* May 28 2011 Massimiliano Pala <madwolf@openca.org>
+- Added source code to the repository
+
+* May 28 2011 Massimiliano Pala <madwolf@openca.org>
+- Added source code to the repository
+
+* May 19 2011 Massimiliano Pala <madwolf@openca.org>
+- First simple Makefile to test the library's functionalities
+
+* May 18 2011 Massimiliano Pala <madwolf@openca.org>
+- Added LICENSE file
+
+* Apr 24 2011 Massimiliano Pala <madwolf@openca.org>
+- Repository Created

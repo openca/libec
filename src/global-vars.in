@@ -1,0 +1,116 @@
+# src/global-vars.in
+
+VERSION			= @PACKAGE_VERSION@
+PACKAGE_VERSION		= @PACKAGE_VERSION@
+TODAY			= @TODAY@
+
+INTERFACE_CURRENT	= @iface_current@
+INTERFACE_REVISION	= @iface_revision@
+INTERFACE_AGE		= @iface_age@
+
+#-------- installation paths: --------
+
+# prefix		= $(DESTDIR)@prefix@
+# exec_prefix		= @exec_prefix@
+
+etc_prefix		= $(DESTDIR)${prefix}/etc
+lib_prefix		= $(DESTDIR)@libdir@
+var_prefix		= $(DESTDIR)${prefix}/var
+doc_prefix		= $(DESTDIR)$datadir/libec
+
+DEST_SBINDIR		= $(DESTDIR)@sbindir@
+DEST_BINDIR		= $(DESTDIR)@bindir@
+DEST_LIBDIR		= $(DESTDIR)@libdir@
+DEST_DATADIR		= @datadir@
+DEST_INFODIR		= @infodir@
+DEST_MANDIR		= @mandir@
+
+#-------- for distribution building: --------
+
+dist_user		= @dist_user@
+dist_group		= @dist_group@
+package_build		= @package_build@
+includedir		= @prefix@/include
+
+#-------- build and utility programs: --------
+
+@SET_MAKE@
+SHEXT			= @shext@
+SHEXT2			= @shext2@
+SHELL			= @SHELL@
+GZIP			= @GZIP@
+TAR			= @TAR@
+PWD			= @PWD@
+## sometimes "-D -c" must be added here
+INSTALL                 = ${install_sh_PROGRAM}
+MKDIR			= @MKDIR@
+CHMOD			= @CHMOD@
+CHOWN			= @CHOWN@
+ECHO			= @ECHO@
+SED			= @SED@
+CAT			= @CAT@
+MV			= @MV@
+CP			= @CP@
+LN_S			= @LN_S@
+AWK			= @AWK@
+CC			= @CC@
+RM			= rm
+
+PERL			= @PERL@
+OPENSSL			= ${OPENSSL_CMD}
+OPENSSL_PREFIX		= ${openssl_prefix}
+OPENSSL_CFLAGS		= ${openssl_cflags}
+OPENSSL_LDFLAGS		= ${openssl_ldflags}
+OPENSSL_LDADD		= ${openssl_ldadd}
+OPENSSL_STATIC_LIBS	= ${openssl_static_libs}
+
+PTHREAD_MYDEFS		= @pthread_opts@
+
+# =================================================
+
+SYSTEM_CFLAGS		= @sys_cflags@
+SYSTEM_LDADD		= @sys_ldadd@
+
+# =================================================
+
+BUILD_LIBEC_CFLAGS	= -D__LIB_BUILD__ @pthread_opts@ @my_cflags@ @sys_cflags@
+BUILD_LIBEC_LDFLAGS	= @my_ldflags@ @rpath@
+BUILD_LIBEC_LDADD	= @my_ldadd@
+TEST_LIBS		= @test_libs@
+
+LIBEC_CFLAGS		= @libec_cflags@
+LIBEC_LDFLAGS		= @libec_ldflags@ @rpath@
+LIBEC_LIBADD		= @libec_ldadd@
+
+RPATH = @rpath@
+
+# ================================================
+
+POD2MAN			= @POD2MAN@
+
+## this is an implementation of GNU's "install -D"
+__install_dir::
+	@if test -z "$(DIR)"; then $(MAKE) default; \
+	else \
+	    if test ! -d $(DIR); then \
+		$(MAKE) __install_dir DIR=`dirname $(DIR)`; \
+		if test -n "$(MODE)"; then \
+			set -x; \
+			$(INSTALL) -d -o $(USER) -g $(GROUP) -m $(MODE) $(DIR); \
+		else \
+			set -x; \
+			$(INSTALL) -d -o $(USER) -g $(GROUP) $(DIR); \
+		fi; \
+	    fi; \
+	fi;
+
+## this is an implementation of relative linking
+## it is required to support symlink during installs
+## with DEST_DIR in use (package builds)
+__install_ln_s::
+	if test -z "$(TARGET)"; then $(MAKE) default; \
+	else \
+	    $(TOP)/relative_ln_s.sh $(TARGET) $(LINK); \
+	    chown -h $(USER):$(GROUP) $(LINK); \
+	fi;
+

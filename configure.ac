@@ -21,15 +21,20 @@ mybits_install=""
 is_sparc="no"
 is_aix="no"
 my_arch=`uname -m`
+if [[ "x$host" = "x" ]] ; then
+	my_arch=`uname -m`
+else
+	my_arch=$host
+fi
 
 case "$my_arch" in
-  *i686)
+  *i686*)
     mybits="32"
     ;;
-  *i386)
+  *i386*)
     mybits="32"
     ;;
-  *86_64)
+  *86_64*)
     mybits="64"
     mybits_install="64"
     ;;
@@ -80,7 +85,7 @@ iface_current=$iface_version
 iface_revision=$iface_current
 
 # Oldest Interface Supported
-iface_oldest=80
+iface_oldest=0
 
 # Range of supported interfaces (current - oldest)
 let "iface_age=$iface_current - $iface_oldest"
@@ -234,13 +239,13 @@ AC_SUBST(arch_target)
 AC_SUBST(myarch)
 AC_SUBST(mybits_install)
 
-AM_CONDITIONAL(libec_ARCH_LINUX, test x$myarch = xlinux)
-AM_CONDITIONAL(libec_ARCH_BSD, test x$myarch = xbsd)
-AM_CONDITIONAL(libec_ARCH_OSX, test x$myarch = xdarwin)
-AM_CONDITIONAL(libec_ARCH_SOLARIS, test x$myarch = xsolaris)
-AM_CONDITIONAL(libec_ARCH_HPUX, test x$myarch = xhpux)
-AM_CONDITIONAL(libec_ARCH_AIX, test x$myarch = xaix)
-AM_CONDITIONAL(libec_ENABLE_IPHONE, test x$enable_iphone = xyes)
+AM_CONDITIONAL(LIBEC_ARCH_LINUX, test x$myarch = xlinux)
+AM_CONDITIONAL(LIBEC_ARCH_BSD, test x$myarch = xbsd)
+AM_CONDITIONAL(LIBEC_ARCH_OSX, test x$myarch = xdarwin)
+AM_CONDITIONAL(LIBEC_ARCH_SOLARIS, test x$myarch = xsolaris)
+AM_CONDITIONAL(LIBEC_ARCH_HPUX, test x$myarch = xhpux)
+AM_CONDITIONAL(LIBEC_ARCH_AIX, test x$myarch = xaix)
+AM_CONDITIONAL(LIBEC_ENABLE_IPHONE, test x$enable_iphone = xyes)
 
 if [[ "x$myarch" = "xsolaris" ]] ; then
 	DIST_VERSION=`uname -r`
@@ -305,9 +310,6 @@ AC_CHECK_LIB(c, calloc,
 
 if [[ "x$iphone_build" = "xno" ]] ; then
 	dnl check for libraries
-	dnl AC_CHECK_LIB(nsl, gethostbyname)
-	dnl AC_CHECK_LIB(socket, socket)
-	dnl AC_CHECK_LIB(resolv, res_query)
 
 	AC_HEADER_STDC
 	AC_HEADER_SYS_WAIT
@@ -352,11 +354,6 @@ if [[ "$CC" = "gcc" ]] ; then
 
 	AC_GCC_CHECK_PRAGMA_IGNORED
 	AC_GCC_CHECK_PRAGMA_POP
-
-	dnl AC_CHECK_C_OPTION(-m64)
-	dnl AC_CHECK_C_OPTION(-rdynamic)
-	dnl AC_CHECK_C_OPTION(--export-dynamic)
-	dnl AC_CHECK_C_OPTION(--export-all-symbols)
 fi
 
 EXTRA_CFLAGS=$CFLAGS
@@ -520,7 +517,7 @@ AC_SUBST(INSTALL_BUILDER)
 
 dnl ######################### CRYPTO SUPPORT #############################
 
-C_ARG_ENABLE( openssl,
+AC_ARG_ENABLE( openssl,
 	AC_HELP_STRING( [--enable-openssl],
 		[enable openssl crypto for token operations (default is yes)]),
 			enableopenssl=$enableval, enableopenssl=yes )
@@ -535,8 +532,8 @@ openssl_include=
 openssl_setup=no
 openssl_engine=
 openssl_static_libs=
-openssl_min_ver=0.9.8
-openssl_pkg_min_ver=0.9.8
+openssl_min_ver=1.0.0
+openssl_pkg_min_ver=1.0.1
 
 AM_CONDITIONAL(OPENSSL_PREFIX, test ! x$openssl_prefix = x )
 
@@ -729,7 +726,7 @@ fi
 dnl ================= OpenSSL Static LIBS (?) =========================
 
 AM_CONDITIONAL(STATIC_COMPILE, test "x$openssl_static_libs" != "x")
-AC_CONFIG_HEADER([src/include/libec/config.h])
+AC_CONFIG_HEADER([src/libec/config.h])
 
 AC_ARG_ENABLE(strict,
 	AC_HELP_STRING( [--enable-strict],
@@ -742,34 +739,43 @@ sys_ldadd=
 sys_cflags=
 
 if test x$myarch = xlinux ; then
-  AC_DEFINE(libec_TARGET_LINUX, 1, [Linux])
+  AC_DEFINE(LIBEC_TARGET_LINUX, 1, [Linux])
   sys_ldadd="-ldl -lrt"
   sys_cflags="-DLINUX"
 elif test x$myarch = xbsd ; then
-  AC_DEFINE(libec_TARGET_BSD, 1, [BSD])
+  AC_DEFINE(LIBEC_TARGET_BSD, 1, [BSD])
   sys_ldadd="-lc "
   sys_cflags="-DBSD"
 elif test x$myarch = xdarwin ; then
   if [[ "x$iphone_build" = "xyes" ]] ; then
-    AC_DEFINE(libec_TARGET_IPHONE, 1, [IPHONE])
+    AC_DEFINE(LIBEC_TARGET_IPHONE, 1, [IPHONE])
     sys_ldadd="-dead_strip -framework Foundation -framework UIKit"
     sys_cflags="-DIPHONE"
   else
-    AC_DEFINE(libec_TARGET_OSX, 1, [OSX])
+    AC_DEFINE(LIBEC_TARGET_OSX, 1, [OSX])
     sys_cflags="-DMACOS"
     dnl sys_cflags="-framework CoreFoundation"
     sys_ldadd="-ll -framework Foundation"
   fi
 elif test x$myarch = xsolaris ; then
-  AC_DEFINE(libec_TARGET_SOLARIS, 1, [Solaris])
+  AC_DEFINE(LIBEC_TARGET_SOLARIS, 1, [Solaris])
   sys_ldadd="-ll -ldl -lnsl -lsocket -lposix4 -lresolv -lrt"
     sys_cflags="-DSOLARIS"
 elif test x$myarch = xhpux ; then
-  AC_DEFINE(libec_TARGET_HPUX, 1, [HP-UX])
+  AC_DEFINE(LIBEC_TARGET_HPUX, 1, [HP-UX])
   sys_ldadd="-ll -ldl -lrt"
   sys_cflags="-DHPUX"
 fi
 
+if [[ "${mybits}" = "32" ]] ; then
+  sys_cflags="-m32 ${sys_cflags}"
+  sys_ldadd="-m32 ${sys_ldadd}"
+fi
+
+if [[ "${mybits}" = "64" ]] ; then
+  sys_cflags="-m64 ${sys_cflags}"
+  sys_ldadd="-m64 ${sys_ldadd}"
+fi
 if ! [[ "$strict_compile" = "no" ]] ; then
 	sys_cflags="${sys_cflags} -Wall -Werror"	
 fi
@@ -903,8 +909,12 @@ dnl ==================================================================
 
 AC_CONFIG_FILES(
 	Makefile
-	src/global-vars
 	src/Makefile
+	src/global-vars
+	src/tests/Makefile
+	src/scripts/libec-config
+	contrib/libec.pc
+	contrib/libec-inst.xml
 )
 
 AC_OUTPUT
