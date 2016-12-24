@@ -1,9 +1,10 @@
-PREFIX      := /usr
-CXXFLAGS    := -Iinclude -I$(PREFIX)/include -pthread
-LIBS_DIR    := -L$(PREFIX)/lib64
-LIBS        := -lcrypto -lssl -lz -pthread -ldl
+PREFIX   := /usr
+CXXFLAGS := -Iinclude -I$(PREFIX)/include -pthread
+LIBS_DIR := -L$(PREFIX)/lib64
+LIBS     := -lcrypto -lssl -lz -pthread -ldl
 
-VALGRIND    := valgrind -v \
+VALGRIND := \
+  valgrind -v \
   --leak-check=full \
   --gen-suppressions=yes \
   --suppressions=.valgrind.supp \
@@ -12,9 +13,9 @@ VALGRIND    := valgrind -v \
   --log-file=valgrind.log
 
 SRCS := \
-	libec.c \
-        t/main.c \
-	t/time.c
+  libec.c  \
+  t/main.c \
+  t/time.c
 
 EXE  := lib-test
 
