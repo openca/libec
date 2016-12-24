@@ -148,7 +148,6 @@ make DESTDIR="$RPM_BUILD_ROOT" prefix="%{prefix}" mandir="$RPM_BUILD_ROOT%{mand}
 %defattr(-, root, root)
 %{prefix}/bin/libec-config
 %{prefix}/include/*
-%{prefix}/share/*
 
 %post
 

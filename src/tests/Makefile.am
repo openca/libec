@@ -18,12 +18,12 @@ endif
 
 SUBDIRS =
 
-EXTRA_DIST =
+EXTRA_DIST = *.h
 
 check_PROGRAMS = \
 	test1 
 
-test1_SOURCES = test1.c
+test1_SOURCES = test1.c time_diff.c
 test1_LDFLAGS = $(testLDFLAGS)
 test1_LDADD   = $(testLDADD)
 test1_CFLAGS = -I$(TOP) $(LIBEC_CFLAGS)

@@ -7,7 +7,7 @@
 
 // Local Includes
 #include <libec/libec.h>
-#include "time.h"
+#include "time_diff.h"
 #include "debug.h"
 
 // Defines

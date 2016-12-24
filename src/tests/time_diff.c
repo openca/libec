@@ -1,7 +1,7 @@
 /* Implementation for simple time-testing */
 
 // Includes
-#include "time.h"
+#include "time_diff.h"
 
 // Implementation
 unsigned long long timeval_diff(struct timeval *start,

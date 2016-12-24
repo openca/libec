@@ -106,7 +106,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 	$(am__configure_deps) $(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/libec/config.h
 CONFIG_CLEAN_FILES = src/scripts/libec-config contrib/libec.pc \
 	contrib/libec-inst.xml
@@ -376,7 +376,6 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/build/compile \
 	$(top_srcdir)/build/config.guess \
 	$(top_srcdir)/build/config.sub $(top_srcdir)/build/install-sh \
 	$(top_srcdir)/build/ltmain.sh $(top_srcdir)/build/missing \
-	$(top_srcdir)/build/mkinstalldirs \
 	$(top_srcdir)/build/test-driver \
 	$(top_srcdir)/contrib/libec-inst.xml.in \
 	$(top_srcdir)/contrib/libec.pc.in \
@@ -384,7 +383,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/build/compile \
 	$(top_srcdir)/src/scripts/libec-config.in AUTHORS COPYING \
 	ChangeLog INSTALL NEWS README build/compile build/config.guess \
 	build/config.sub build/depcomp build/install-sh \
-	build/ltmain.sh build/missing build/mkinstalldirs
+	build/ltmain.sh build/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
