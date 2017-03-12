@@ -166,7 +166,7 @@ typedef enum {
 #define HMAC_VALUE_free ASN1_OCTET_STRING_free
 
 // Generic Structure for a Crypto Key
-typedef struct raae_crypto_key_st {
+typedef struct libec_crypto_key_st {
   LIBEC_KEY_TYPE   type;
   EVP_PKEY             * pkey;
   struct {
@@ -176,7 +176,7 @@ typedef struct raae_crypto_key_st {
 } LIBEC_KEY;
 
 // Signature Data Structure
-typedef struct raae_crypto_signature_st {
+typedef struct libec_crypto_signature_st {
   ASN1_OCTET_STRING * keyIdentifier;
   ASN1_OCTET_STRING * value;
 } LIBEC_SIGNATURE;
@@ -184,7 +184,7 @@ typedef struct raae_crypto_signature_st {
 DECLARE_ASN1_FUNCTIONS(LIBEC_SIGNATURE)
 
 // Encrypted Data Structure
-typedef struct raae_crypto_encrypted_st {
+typedef struct libec_crypto_encrypted_st {
   ASN1_OCTET_STRING * keyIdentifier;
   ASN1_OCTET_STRING * encryptionKey;
   ASN1_OCTET_STRING * value;
@@ -195,8 +195,8 @@ DECLARE_ASN1_FUNCTIONS(LIBEC_ENCRYPTED)
 // Digest Structure
 typedef ASN1_OCTET_STRING LIBEC_DIGEST;
 
-// RAAE Context Structure
-typedef struct raae_crypto_context_st {
+// LIBEC Context Structure
+typedef struct libec_crypto_context_st {
   // Signature Context
   EVP_MD_CTX   * md_ctx;
   // HMAC Context

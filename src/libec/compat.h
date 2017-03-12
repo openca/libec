@@ -1,4 +1,4 @@
-/* libraae/compat.h */
+/* librec/compat.h */
 
 #ifndef LIBEC_COMPAT_H
 #define LIBEC_COMPAT_H
