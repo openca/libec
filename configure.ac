@@ -2,7 +2,7 @@ AC_REVISION($Revision: 1.19 $)
 AC_COPYRIGHT([Copyright 2011-2017 by Massimiliano Pala and OpenCA Labs])
 
 dnl Autoconf
-AC_INIT(libec, 0.1.0, [director@openca.org], [libec])
+AC_INIT(libec, 1.14.2, [director@openca.org], [libec])
 AC_PREREQ(2.13)
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_MACRO_DIR([m4])
@@ -69,26 +69,40 @@ AC_SUBST(mybits)
 v=$PACKAGE_VERSION
 dnl v=`cat IFACE_VERSION`
 
-revision=`echo $v | sed -e 's|[[0-9]]\.[[0-9]]\.[[0-9]]\.||'`
-v=`echo ${v%.${revision}}`
+# revision=`echo $v | sed -e 's|([[0-9]]\+\.[[0-9]]\+\.[[0-9]]\+[[\-]]?||'`
+revision=`echo $v | sed -e 's|[[0-9]]\+\.[[0-9]]\+\.[[0-9]]\+[[\-]]\?||'`
+v=`echo ${v%-${revision}}`
 
-minor=`echo $v | sed -e 's|[[0-9]]\.[[0-9]].||'`
-tmp=`echo $v | sed -e 's|[[0-9]]\.[[0-9]]*||'`
-major=`echo ${v%.$minor} | sed -e 's|^0*||' | sed -e 's|\.||g'`
+# minor=`echo $v | sed -e 's|[[0-9]]\.||' | sed -e 's|\.[[0-9]]$||`
+# tmp=`echo $v | sed -e 's|[[0-9]]\.[[0-9]]*||'`
+# major=`echo ${v%.$minor} | sed -e 's|^0*||' | sed -e 's|\.||g'`
+micro=`echo $v | sed -e 's|[[0-9]]\+\.[[0-9]]\+\.||'`
+minor=`echo $v | sed -e 's|[[0-9]]\+\.||' | sed -e 's|\.[[0-9]]\+$||'`
+major=`echo $v | sed -e 's|\.[[0-9]]\+\.[[0-9]]\+\$||'`
 
-let "iface_version=$major * 10 + $minor"
+# AC_MSG_ERROR([*** DEBUG ***: v: $v, major: $major, minor: $minor, micro: $micro, revision: $revision])
+let "iface_version=$major * 100 + $minor"
 
 # Most Recent Implemented Interface
-iface_current=$iface_version
+iface_current=$major
 
 # Implementation number of the current interface
-iface_revision=$iface_current
+# iface_revision=$iface_current
+iface_revision=$minor
 
-# Oldest Interface Supported
-iface_oldest=0
+# Oldest Interface Supported (number of interfaces supported
+# between iface_current and the oldest). That means that for
+# libraries that are backward compatible, you should increment
+# this number to the number of releases (major numbers) that
+# are compatible with the current one
+iface_oldest=-1
 
 # Range of supported interfaces (current - oldest)
-let "iface_age=$iface_current - $iface_oldest"
+if [[ $iface_oldest -gt -1 ]] ; then
+	let "iface_age=$iface_current - $iface_oldest"
+else
+	let "iface_age=0"
+fi
 
 AC_SUBST(iface_current)
 AC_SUBST(iface_revision)
@@ -944,7 +958,8 @@ Configuration for $PACKAGE $VERSION :
  Architecture .........: $myarch ($mybits bits)
  Host System Type .....: $host
  Supported URLs .......: $supported_urls
- Library Version ......: v = $iface_current, r = $iface_revision, a = $iface_age
+ Library Version Info .: $iface_current:$iface_revision:$iface_age
+ Library Release ......: $v
  Install lib path .....: $libdir
  Install path .........: $package_prefix
  Compiler Flags .......: $my_cflags

@@ -1,3 +1,6 @@
+* Mar 12 2017 Massimiliano Pala <madwolf@openca.org>
+- Fixed library versioning and added versioning documentation file.
+
 * Jun  2 2011 Massimiliano Pala <madwolf@openca.org>
 - Added valgrind suppress config file
 
