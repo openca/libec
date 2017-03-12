@@ -155,7 +155,7 @@ documentation:: pdfdocs
 
 distclean-local:
 	@echo "Cleaning local autoconf cache... " ; \
-	 rm -rf autom4te.cache/
+	 rm -rf autom4te.cache/ contrib/libec.spec *.tar.gz *.rpm
 
 ########################## BINARY DISTRO STUFF ###########################
 
@@ -225,17 +225,15 @@ rpm:
 	done ; \
 	echo "Done." \
 	echo -n "Creating spec file ... " ; \
-	filename="libec.spec" ; \
+	filename="$(PACKAGE_NAME).spec" ; \
 	if [ -e "contrib/$$filename.orig" ] ; then \
-		echo -n "($$filename.orig) --> "; \
 		cat "contrib/$$filename.orig" | \
-			sed -e "s/@RPM_VERSION@/$(VERSION)/g" | \
+			sed -e "s/\@RPM_VERSION\@/$(RPM_VERSION)/g" | \
 			sed -e "s/\@RC\@/$(RC)/g" | \
-			sed -e "s/@PKGNAME@/$(PACKAGE_NAME)/g" | \
+			sed -e "s/\@PKGNAME\@/$(PACKAGE_NAME)/g" | \
 			sed -e "s/\@mybits\@/@mybits@/g" | \
-			sed -e "s|@BUILDROOT@|/tmp/$(PACKAGE_NAME)-%{ver}-root|g" > \
-			"contrib/libec.spec" ; \
-		echo "($$filename)"; \
+			sed -e "s|\@BUILDROOT\@|/tmp/$(PACKAGE_NAME)-%{ver}-root|g" > \
+			"contrib/$(PACKAGE_NAME).spec" ; \
 	else \
 		echo "contrib/$$filename ... not found" ; \
 		exit 1 ; \

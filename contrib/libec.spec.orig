@@ -63,12 +63,12 @@
 %define packer %(finger -lp `echo "$USER"` | head -n 1 | cut -d ' ' -f 2)
 
 %define ver      	@RPM_VERSION@
-%define RELEASE 	@RC@
+%define CUSTOM_RELEASE 	@RC@
+%define RELEASE		1
 %define rel     	%{?CUSTOM_RELEASE}%{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix   	/usr
 %define mand		/usr/share/man
 %define openssl_req 	0.9.8
-%define openldap_req 	2.2
 
 %define working_release %rel.%{disttag}%{distver}
 
@@ -82,7 +82,7 @@ Version: %ver
 # Release: %rel.%{disttag}%{distver}
 Release: %{working_release}
 License: OpenCA License (BSD Style)
-Group: Security/PKI
+Group: Security/Crypto
 Source: @PKGNAME@-%{ver}.tar.gz
 Packager:  %packer
 Vendor: OpenCA Labs

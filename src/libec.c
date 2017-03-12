@@ -367,39 +367,24 @@ static int _privkey_encode_sym(unsigned char       ** data,
 	// Zeroizes the ASN1 data structure
 	memset(&val, 0, sizeof(ASN1_OCTET_STRING));
 
-    // Assigns the value to the value field
-    if (1 != ASN1_OCTET_STRING_set(&val, key, key_size)) return 0;
+  // Assigns the value to the value field
+  if (1 != ASN1_OCTET_STRING_set(&val, key, key_size)) return 0;
 
-    // Gets the size of the encoded value
-    if ((*data_size = i2d_ASN1_OCTET_STRING(&val, NULL)) <= 0) return 0;
+  // Gets the size of the encoded value
+  if ((*data_size = i2d_ASN1_OCTET_STRING(&val, NULL)) <= 0) return 0;
 
-    // Let's allocate the required memory
-    if ((*data = OPENSSL_malloc(*data_size)) == NULL) return 0;
+  // Let's allocate the required memory
+  if ((*data = OPENSSL_malloc(*data_size)) == NULL) return 0;
 
-    // Encodes the value
-    tmp_pnt = *data;
-    i2d_ASN1_OCTET_STRING(&val, &tmp_pnt);
+  // Encodes the value
+  tmp_pnt = *data;
+  i2d_ASN1_OCTET_STRING(&val, &tmp_pnt);
 
-    // Clears the string
-    ASN1_STRING_set0(&val, NULL, 0);
+  // Clears the string
+  ASN1_STRING_set0(&val, NULL, 0);
 
-    // All Done
-    return 1;
-
-err:
-
-	// Memory Cleanup
-	if (*data) {
-		OPENSSL_cleanse(*data, *data_size);
-		OPENSSL_free(*data);
-		*data = NULL;
-	}
-
-	// Output Parameters Cleanup
-	if (*data_size) *data_size = 0;
-
-	// Error
-	return 0;
+  // All Done
+  return 1;
 }
 
 EVP_PKEY * _privkey_decode(const unsigned char * data,
@@ -488,6 +473,7 @@ static int _privkey_decode_sym(unsigned char       * key,
   return 1;
 }
 
+/*
 static int _get_md_nid(int v) {
 
 	// Returns the NID for the supported algorithm
@@ -512,6 +498,7 @@ static int _get_md_nid(int v) {
 
 	return NID_undef;
 }
+*/
 
 static const EVP_MD * _get_evp_md(int v) {
 
@@ -538,6 +525,7 @@ static const EVP_MD * _get_evp_md(int v) {
 	return NID_undef;
 }
 
+/*
 static int _get_pkey_type(int v) {
 
 	switch (v & LIBEC_ALGOR_MASK) {
@@ -557,6 +545,7 @@ static int _get_pkey_type(int v) {
 
 	return NID_undef;
 }
+*/
 
 static const EVP_CIPHER * _get_evp_cipher(int v) {
 
@@ -624,10 +613,9 @@ static const EVP_CIPHER * _get_evp_cipher(int v) {
 	return NID_undef;
 }
 
-size_t _get_identifier(const unsigned char    ** data,
-                       LIBEC_DIGEST_ALG  * dgst_alg,
-                       LIBEC_DIGEST      * x_k) {
-  size_t ret = 0;
+size_t _get_identifier(const unsigned char ** data,
+                       LIBEC_DIGEST_ALG     * dgst_alg,
+                       LIBEC_DIGEST         * x_k) {
 
 	// Input Check
 	if (!x_k || !x_k->data) return 0;
@@ -1125,15 +1113,15 @@ int _decrypt_final_sym(unsigned char * data, size_t *size, LIBEC_CTX *ctx) {
   return 1;
 }
 
-LIBEC_KEY * _decrypt_key(LIBEC_CTX       ** ctx,
-                               LIBEC_KEY       ** out,
-                               ASN1_OCTET_STRING      * enc_data,
-                               const LIBEC_KEY  * d_key) {
+LIBEC_KEY * _decrypt_key(LIBEC_CTX         ** ctx,
+                         LIBEC_KEY         ** out,
+                         ASN1_OCTET_STRING  * enc_data,
+                         const LIBEC_KEY    * d_key) {
 
   LIBEC_KEY * ret = NULL;
     // Return Structure
 
-  const EVP_CIPHER * cipher   = NULL;
+  // const EVP_CIPHER * cipher   = NULL;
     // HMAC Message Digest
 
   LIBEC_CTX * inner_ctx = NULL;
@@ -1141,27 +1129,25 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX       ** ctx,
 
   int    outd           = 0;
   size_t outl           = 0;
-  size_t dec_data_size  = 0;
-  size_t enc_data_size  = 0;
-  size_t enc_data_begin = 0;
+  // size_t dec_data_size  = 0;
+  // size_t enc_data_size  = 0;
+  // size_t enc_data_begin = 0;
     // Decrypted data output
 
-  LIBEC_ENC_ALG alg   = 0;
-  LIBEC_ENC_MODE mode = 0;
+  // LIBEC_ENC_ALG alg   = 0;
+  // LIBEC_ENC_MODE mode = 0;
     // Encryption Algorithm and Mode
 
   unsigned char tmp_buf[3072];
     // Buffer for PubKey Decryption
 
-  unsigned char * tmp_pnt = NULL;
-    // Temporary Pointer
-
   // Input Check
-  if (!d_key || !enc_data || !enc_data->data || enc_data->length < 1) return NULL;
+  if (!d_key || !enc_data || !enc_data->data || enc_data->length < 1)
+		return NULL;
 
   // Gets the Algor and Mode
-  alg = enc_data->data[0] & LIBEC_ENC_ALG_MASK;
-  mode = enc_data->data[0] & LIBEC_ENC_MODE_MASK;
+  // alg = enc_data->data[0] & LIBEC_ENC_ALG_MASK;
+  // mode = enc_data->data[0] & LIBEC_ENC_MODE_MASK;
 
   // Setup the Container's pointers
   if (out && *out) {
@@ -1202,26 +1188,27 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX       ** ctx,
           if (enc_data->data[0] != LIBEC_ENC_ALG_RSA) goto err;
 
           // Allocates the Context for Public Key Operations
-          if ((inner_ctx->pkey_ctx = EVP_PKEY_CTX_new(d_key->pkey, NULL)) == NULL) goto err;
+          if ((inner_ctx->pkey_ctx = 
+									EVP_PKEY_CTX_new(d_key->pkey, NULL)) == NULL) goto err;
 
           // Initializes the Encryption (only works with RSA)
           if (1 != EVP_PKEY_decrypt_init(inner_ctx->pkey_ctx)) goto err;
 
           // Gets the size of the final encryption
           if (EVP_PKEY_decrypt(inner_ctx->pkey_ctx,
-                               NULL,
-                               &ret->skey.data_size,
-                               enc_data->data + LIBEC_ENCRYPTED_PREFIX_SIZE,
-                               enc_data->length - LIBEC_ENCRYPTED_PREFIX_SIZE) <= 0) goto err;
+          			NULL,
+                &ret->skey.data_size,
+                enc_data->data + LIBEC_ENCRYPTED_PREFIX_SIZE,
+                enc_data->length - LIBEC_ENCRYPTED_PREFIX_SIZE) <= 0) goto err;
 
           // Checks we have enough space
           if (ret->skey.data_size > sizeof(tmp_buf)) goto err;
 
           if (EVP_PKEY_decrypt(inner_ctx->pkey_ctx,
-                               tmp_buf,
-                               &ret->skey.data_size,
-                               enc_data->data + LIBEC_ENCRYPTED_PREFIX_SIZE,
-                               enc_data->length - LIBEC_ENCRYPTED_PREFIX_SIZE) <= 0) goto err;
+                tmp_buf,
+                &ret->skey.data_size,
+                enc_data->data + LIBEC_ENCRYPTED_PREFIX_SIZE,
+                enc_data->length - LIBEC_ENCRYPTED_PREFIX_SIZE) <= 0) goto err;
 
           // Copy the recovered data
           memcpy(ret->skey.data, tmp_buf, ret->skey.data_size);
@@ -1233,10 +1220,12 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX       ** ctx,
         // EC Keys
         case EVP_PKEY_EC : {
 
-          // This case is a bit more complex, because we need to generate another point
-          // on the curve, then use the destination key (d_key) and the ephemeral key (d_eph)
-          // to derive the encryption key that will be used to encrypt the message
-          fprintf(stderr, "ERROR: Encrypting for an EC key is NOT Implemented!\n");
+          // This case is a bit more complex, because we need to generate
+					// another point on the curve, then use the destination key
+					// (d_key) and the ephemeral key (d_eph) to derive the encryption
+					// key that will be used to encrypt the message
+          fprintf(stderr, 
+								"ERROR: Encrypting for an EC key is NOT Implemented!\n");
           goto err;
 
         } break;
@@ -1260,8 +1249,9 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX       ** ctx,
 
       // Checks that the size of the encrypted ciphertext is not bigger than
       // the destination key holder (ret->skey.data)
-      if (sizeof(ret->skey.data) <
-          inner_ctx->dec_data + inner_ctx->dec_data_size - inner_ctx->dec_data_next) goto err;
+      if (sizeof(ret->skey.data) < inner_ctx->dec_data 
+											             + inner_ctx->dec_data_size 
+																	 - inner_ctx->dec_data_next) goto err;
 
       // Decrypts the key data
       if (1 != EVP_DecryptUpdate(inner_ctx->cipher_ctx,
@@ -1723,8 +1713,6 @@ LIBEC_DIGEST_ALG LIBEC_DIGEST_algor(const LIBEC_DIGEST *dgst) {
 
 size_t LIBEC_DIGEST_value(const unsigned char      ** data,
                                 const LIBEC_DIGEST  * dgst) {
-
-	size_t ret = 0;
 
 	// Input Check
 	if (!dgst) return 0;
@@ -2276,8 +2264,6 @@ int LIBEC_SIGNATURE_algor(LIBEC_ALGOR           * algor,
 size_t LIBEC_SIGNATURE_value(const unsigned char         ** data,
                                    const LIBEC_SIGNATURE  * sig) {
 
-	size_t ret = 0;
-
 	// Input Check
 	if (!sig || !sig->value || !sig->value->data) return 0;
 
@@ -2455,10 +2441,10 @@ LIBEC_SIGNATURE * LIBEC_sign_final(LIBEC_SIGNATURE ** sig,
 	LIBEC_SIGNATURE * ret = NULL;
 		// Return Data Structure
 
-	LIBEC_DIGEST * key_id = NULL;
+	// LIBEC_DIGEST * key_id = NULL;
 		// Key Identifier structure
 
-	unsigned char * tmp = NULL;
+	// unsigned char * tmp = NULL;
 	unsigned char * buf = NULL;
 	int buf_len = 0;
 		// Signature Length
@@ -2707,10 +2693,10 @@ err:
 }
 
 LIBEC_CTX * LIBEC_verify_init(LIBEC_CTX             ** ctx,
-                                          const LIBEC_SIGNATURE  * sig,
-                                          const LIBEC_KEY        * key,
-                                          const unsigned char          * data,
-                                          size_t                         data_size) {
+                              const LIBEC_SIGNATURE  * sig,
+                              const LIBEC_KEY        * key,
+                              const unsigned char    * data,
+                              size_t                   data_size) {
 
 	LIBEC_CTX * ret = NULL;
 		// Return CTX
@@ -2719,7 +2705,7 @@ LIBEC_CTX * LIBEC_verify_init(LIBEC_CTX             ** ctx,
 	LIBEC_ALGOR a_algor     = 0;
 		// Signature's algorithms
 
-  const EVP_MD * md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT);
+  // const EVP_MD * md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT);
     // HMAC Message Digest
 
 	// Input Check
@@ -3160,8 +3146,6 @@ int LIBEC_ENCRYPTED_algor(LIBEC_ENC_ALG         * algor,
 
 size_t LIBEC_ENCRYPTED_value(const unsigned char         ** data,
 								                   const LIBEC_ENCRYPTED  * enc) {
-	size_t ret = 0;
-
 	// Input Check
 	if (!enc || !enc->value || !enc->value->data) return 0;
 
@@ -3193,19 +3177,18 @@ LIBEC_CTX * LIBEC_encrypt_init(LIBEC_CTX      ** ctx,
   LIBEC_CTX * ret = NULL;
     // Return Structure
 
-  const EVP_CIPHER * cipher = NULL;
+  // const EVP_CIPHER * cipher = NULL;
     // HMAC Message Digest
 
   unsigned char * enc_key = NULL;
-  unsigned char * tag_pnt = NULL;
   size_t enc_key_size = 0;
     // Local containers for key and iv
 
   ASN1_OCTET_STRING * o_pnt = NULL;
     // Encrypted container
 
-  unsigned char * enc_key_data = NULL;
-  size_t enc_key_data_size = 0;
+  // unsigned char * enc_key_data = NULL;
+  // size_t enc_key_data_size = 0;
     // Container for the encrypted data
 
   int outl = 0;
@@ -3339,13 +3322,13 @@ int LIBEC_encrypt_update(LIBEC_CTX     * ctx,
 }
 
 LIBEC_ENCRYPTED * LIBEC_encrypt_final(LIBEC_ENCRYPTED ** enc,
-						                                      LIBEC_CTX        * ctx) {
+						                          LIBEC_CTX        * ctx) {
 
   LIBEC_ENCRYPTED * ret = NULL;
     // Return Structure
 
-  int outl = 0;
-  size_t tag_size = 0;
+  // int outl = 0;
+  // size_t tag_size = 0;
     // Size of the AEAD Tag
 
   // Input Checks
@@ -3601,8 +3584,8 @@ LIBEC_CTX * LIBEC_decrypt_init(LIBEC_CTX             ** ctx,
 
   int outl = 0;
   int proc = 0;
-  unsigned char * dec_data = NULL;
-  size_t dec_data_size = 0;
+  // unsigned char * dec_data = NULL;
+  // size_t dec_data_size = 0;
     // Decrypted Data Pointers
 
   // Input Check
@@ -3827,8 +3810,8 @@ LIBEC_CTX * LIBEC_decrypt_sym_direct(LIBEC_CTX       ** ctx,
 
   int outl = 0;
   int proc = 0;
-  unsigned char * dec_data = NULL;
-  size_t dec_data_size = 0;
+  // unsigned char * dec_data = NULL;
+  // size_t dec_data_size = 0;
     // Decrypted Data Pointers
 
   // Input Check

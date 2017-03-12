@@ -2,14 +2,10 @@ AC_REVISION($Revision: 1.19 $)
 AC_COPYRIGHT([Copyright 2011-2017 by Massimiliano Pala and OpenCA Labs])
 
 dnl Autoconf
-AC_INIT(libec, 1.14.2, [director@openca.org], [libec])
+AC_INIT(libec, 0.10.2, [director@openca.org], [libec])
 AC_PREREQ(2.13)
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_MACRO_DIR([m4])
-
-dnl Release Subversion (for binary packages)
-RC=1
-AC_SUBST(RC)
 
 dnl Set Version Numbers
 TODAY=`/bin/date +%Y%m%d`
@@ -69,9 +65,14 @@ AC_SUBST(mybits)
 v=$PACKAGE_VERSION
 dnl v=`cat IFACE_VERSION`
 
+dnl Release Subversion (for binary packages)
 # revision=`echo $v | sed -e 's|([[0-9]]\+\.[[0-9]]\+\.[[0-9]]\+[[\-]]?||'`
 revision=`echo $v | sed -e 's|[[0-9]]\+\.[[0-9]]\+\.[[0-9]]\+[[\-]]\?||'`
+RC=$revision
+
 v=`echo ${v%-${revision}}`
+LIB_VERSION=$v
+RPM_VERSION=$v
 
 # minor=`echo $v | sed -e 's|[[0-9]]\.||' | sed -e 's|\.[[0-9]]$||`
 # tmp=`echo $v | sed -e 's|[[0-9]]\.[[0-9]]*||'`
@@ -104,6 +105,9 @@ else
 	let "iface_age=0"
 fi
 
+AC_SUBST(RC)
+AC_SUBST(LIB_VERSION)
+AC_SUBST(RPM_VERSION)
 AC_SUBST(iface_current)
 AC_SUBST(iface_revision)
 AC_SUBST(iface_age)
