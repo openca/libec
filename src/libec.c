@@ -11,15 +11,15 @@ extern "C" {
 ENGINE *rand_eng = NULL;
 
 #ifndef LIBEC_DIGEST_PREFIX_SIZE
-# define LIBEC_DIGEST_PREFIX_SIZE		1
+# define LIBEC_DIGEST_PREFIX_SIZE    1
 #endif
 
 #ifndef LIBEC_SIGNATURE_PREFIX_SIZE
-# define LIBEC_SIGNATURE_PREFIX_SIZE	1
+# define LIBEC_SIGNATURE_PREFIX_SIZE  1
 #endif
 
 #ifndef LIBEC_ENCRYPTED_PREFIX_SIZE
-# define LIBEC_ENCRYPTED_PREFIX_SIZE	1
+# define LIBEC_ENCRYPTED_PREFIX_SIZE  1
 #endif
 
 #ifndef LIBEC_ENCRYPTED_PREALLOC_BLOCK
@@ -75,16 +75,16 @@ static long *lock_count;
 // ================
 
 ASN1_SEQUENCE(LIBEC_SIGNATURE) = {
-	ASN1_SIMPLE(LIBEC_SIGNATURE, keyIdentifier, ASN1_OCTET_STRING),
-	ASN1_SIMPLE(LIBEC_SIGNATURE, value, ASN1_OCTET_STRING)
+  ASN1_SIMPLE(LIBEC_SIGNATURE, keyIdentifier, ASN1_OCTET_STRING),
+  ASN1_SIMPLE(LIBEC_SIGNATURE, value, ASN1_OCTET_STRING)
 } ASN1_SEQUENCE_END(LIBEC_SIGNATURE)
 
 IMPLEMENT_ASN1_FUNCTIONS(LIBEC_SIGNATURE)
 
 ASN1_SEQUENCE(LIBEC_ENCRYPTED) = {
-	ASN1_SIMPLE(LIBEC_ENCRYPTED, keyIdentifier, ASN1_OCTET_STRING),
+  ASN1_SIMPLE(LIBEC_ENCRYPTED, keyIdentifier, ASN1_OCTET_STRING),
   ASN1_SIMPLE(LIBEC_ENCRYPTED, encryptionKey, ASN1_OCTET_STRING),
-	ASN1_SIMPLE(LIBEC_ENCRYPTED, value, ASN1_OCTET_STRING)
+  ASN1_SIMPLE(LIBEC_ENCRYPTED, value, ASN1_OCTET_STRING)
 } ASN1_SEQUENCE_END(LIBEC_ENCRYPTED)
 
 IMPLEMENT_ASN1_FUNCTIONS(LIBEC_ENCRYPTED)
@@ -94,11 +94,11 @@ IMPLEMENT_ASN1_FUNCTIONS(LIBEC_ENCRYPTED)
 // ================
 
 static inline HMAC_CTX * HMAC_CTX_new() {
-	return (HMAC_CTX *) OPENSSL_malloc(sizeof(HMAC_CTX));
+  return (HMAC_CTX *) OPENSSL_malloc(sizeof(HMAC_CTX));
 }
 
 static inline void HMAC_CTX_free(HMAC_CTX * ctx) {
-	if (ctx) OPENSSL_free(ctx);
+  if (ctx) OPENSSL_free(ctx);
 }
 
 void pthreads_locking_callback(int mode, int type, char *file, int line);
@@ -137,32 +137,32 @@ static int _get_iv_length(const EVP_CIPHER * cipher) {
 
 static EVP_PKEY * _gen_rsa(LIBEC_RSA_SIZE bits) {
 
-	// Generates a new RSA key of the specified size.
-	// The function returns a pointer to a valid 'EVP_PKEY'
-	// structure in case of success or the 'NULL' value
-	// in case of errors
+  // Generates a new RSA key of the specified size.
+  // The function returns a pointer to a valid 'EVP_PKEY'
+  // structure in case of success or the 'NULL' value
+  // in case of errors
 
-	RSA * rsa = NULL;
-		// EC Key
+  RSA * rsa = NULL;
+    // EC Key
 
-	EVP_PKEY * ret = NULL;
-		// Generic EVP Key
+  EVP_PKEY * ret = NULL;
+    // Generic EVP Key
 
     BIGNUM *bne = NULL;
-    	// BIGNUM container
+      // BIGNUM container
 
     int ossl_rc = 0;
-    	// OSSL ret
+      // OSSL ret
 
     unsigned long e = RSA_F4;
-    	// Default exponent (65537)
+      // Default exponent (65537)
 
     if ((bne = BN_new()) != NULL) {
-    	// Sets the Right Value in the BN
-    	if (1 != BN_set_word(bne,e)) goto err;
+      // Sets the Right Value in the BN
+      if (1 != BN_set_word(bne,e)) goto err;
     } else {
-    	// Memory Error
-    	goto err;
+      // Memory Error
+      goto err;
     }
 
     // Apply the default
@@ -171,201 +171,201 @@ static EVP_PKEY * _gen_rsa(LIBEC_RSA_SIZE bits) {
     // Allocates a new RSA structure
     if ((rsa = RSA_new()) == NULL) goto err;
 
-	// Generates the RSA key
-	if ((ossl_rc = RSA_generate_key_ex(rsa, bits, bne, NULL)) == 1) {
-		// Let's free the BN
-		BN_free(bne);
-		bne = NULL;
-	} else {
-		// Error Generating the Key
-		goto err;
-	}
+  // Generates the RSA key
+  if ((ossl_rc = RSA_generate_key_ex(rsa, bits, bne, NULL)) == 1) {
+    // Let's free the BN
+    BN_free(bne);
+    bne = NULL;
+  } else {
+    // Error Generating the Key
+    goto err;
+  }
 
-	// Allocates a new generic container
-	if ((ret = EVP_PKEY_new()) == NULL) goto err;
+  // Allocates a new generic container
+  if ((ret = EVP_PKEY_new()) == NULL) goto err;
 
-	// Assigns the EC key to the generic container
-	if (!EVP_PKEY_assign_RSA(ret, rsa)) goto err;
+  // Assigns the EC key to the generic container
+  if (!EVP_PKEY_assign_RSA(ret, rsa)) goto err;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	if (bne) BN_free(bne);
-	if (rsa) RSA_free(rsa);
-	if (ret) EVP_PKEY_free(ret);
+  if (bne) BN_free(bne);
+  if (rsa) RSA_free(rsa);
+  if (ret) EVP_PKEY_free(ret);
 
-	return NULL;
+  return NULL;
 }
 
 static EVP_PKEY * _gen_ec(LIBEC_EC_CURVE nid) {
 
-	// Generates a new EC key by using the passed
-	// identifier for the EC curve to be used. The
-	// function returns a pointer to a valid 'EVP_PKEY'
-	// structure in case of success or the 'NULL' value
-	// in case of errors.
+  // Generates a new EC key by using the passed
+  // identifier for the EC curve to be used. The
+  // function returns a pointer to a valid 'EVP_PKEY'
+  // structure in case of success or the 'NULL' value
+  // in case of errors.
 
-	EC_KEY * ec = NULL;
-		// EC Key
+  EC_KEY * ec = NULL;
+    // EC Key
 
-	EVP_PKEY * ret = NULL;
-		// Generic EVP Key
+  EVP_PKEY * ret = NULL;
+    // Generic EVP Key
 
-	// Use default if no choice was made
-	// if (nid <= 0) nid = NID_secp224r1;
-	if (nid <= 0) nid = LIBEC_EC_CURVE_DEFAULT;
+  // Use default if no choice was made
+  // if (nid <= 0) nid = NID_secp224r1;
+  if (nid <= 0) nid = LIBEC_EC_CURVE_DEFAULT;
 
-	// Allocate a new curve
-	if ((ec = EC_KEY_new_by_curve_name(nid)) == NULL) goto err;
+  // Allocate a new curve
+  if ((ec = EC_KEY_new_by_curve_name(nid)) == NULL) goto err;
 
-	// Pick the private and public keys
-	if (EC_KEY_generate_key(ec) != 1) goto err;
+  // Pick the private and public keys
+  if (EC_KEY_generate_key(ec) != 1) goto err;
 
-	// Allocates a new generic container
-	if ((ret = EVP_PKEY_new()) == NULL) goto err;
+  // Allocates a new generic container
+  if ((ret = EVP_PKEY_new()) == NULL) goto err;
 
-	// Assigns the EC key to the generic container
-	if (!EVP_PKEY_assign_EC_KEY(ret, ec)) goto err;
+  // Assigns the EC key to the generic container
+  if (!EVP_PKEY_assign_EC_KEY(ret, ec)) goto err;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	ERR_print_errors_fp(stderr);
+  ERR_print_errors_fp(stderr);
 
-	if (ec) EC_KEY_free(ec);
-	if (ret) EVP_PKEY_free(ret);
+  if (ec) EC_KEY_free(ec);
+  if (ret) EVP_PKEY_free(ret);
 
-	return NULL;
+  return NULL;
 }
 
 static int _pubkey_encode(EVP_PKEY       * key,
-		                      unsigned char ** out_data,
-		                      size_t         * out_size) {
+                          unsigned char ** out_data,
+                          size_t         * out_size) {
 
-	// Encodes the public 'key' and saves it in 'key_data'
-	// of 'key_size' length (both 'out' parameters, i.e.
-	// the buffer is allocated by the function).
+  // Encodes the public 'key' and saves it in 'key_data'
+  // of 'key_size' length (both 'out' parameters, i.e.
+  // the buffer is allocated by the function).
 
-	// Input Check
-	if (!key || !out_data || !out_size) return 0;
+  // Input Check
+  if (!key || !out_data || !out_size) return 0;
 
-	// Make sure we have a zeroized pointer
-	*out_data = NULL;
+  // Make sure we have a zeroized pointer
+  *out_data = NULL;
 
-	if ((*out_size = (size_t) i2d_PUBKEY(key, out_data)) > 0) {
-		// Success
-		return 1;
-	}
+  if ((*out_size = (size_t) i2d_PUBKEY(key, out_data)) > 0) {
+    // Success
+    return 1;
+  }
 
-	// Error
-	return 0;
+  // Error
+  return 0;
 }
 
 static EVP_PKEY * _pubkey_decode(EVP_PKEY            ** pkey,
-								 const unsigned char  * data,
-		                         size_t                 size) {
-	// Parses a public key and returns it to the caller.
-	// The data should hold a DER representation of the
-	// public key structure. This function returns a valid
-	// pointer to an 'EVP_PKEY' structure if successful and
-	// the 'NULL' value in case of errors.
+                 const unsigned char  * data,
+                             size_t                 size) {
+  // Parses a public key and returns it to the caller.
+  // The data should hold a DER representation of the
+  // public key structure. This function returns a valid
+  // pointer to an 'EVP_PKEY' structure if successful and
+  // the 'NULL' value in case of errors.
 
-	EVP_PKEY * ret = NULL;
-		// Return Container
+  EVP_PKEY * ret = NULL;
+    // Return Container
 
-	const unsigned char * tmp_pnt = NULL;
-		// Copy Pointer to avoid OpenSSL's
-		// pointer advancement
+  const unsigned char * tmp_pnt = NULL;
+    // Copy Pointer to avoid OpenSSL's
+    // pointer advancement
 
-	// Input Check
-	if (!data || size == 0) return 0;
+  // Input Check
+  if (!data || size == 0) return 0;
 
-	// Copy the Pointer
-	tmp_pnt = data;
+  // Copy the Pointer
+  tmp_pnt = data;
 
-	// Decodes the Key
-	if ((ret = d2i_PUBKEY(pkey, &tmp_pnt, size)) == NULL) {
-		// Error while decoding
-		return NULL;
-	}
+  // Decodes the Key
+  if ((ret = d2i_PUBKEY(pkey, &tmp_pnt, size)) == NULL) {
+    // Error while decoding
+    return NULL;
+  }
 
-	// Success
-	return ret;
+  // Success
+  return ret;
 }
 
 static int _privkey_encode(EVP_PKEY       * key,
-		                       unsigned char ** out_data,
-		                       size_t         * out_size) {
+                           unsigned char ** out_data,
+                           size_t         * out_size) {
 
-	// Encodes the private part of the passed 'key' in DER
-	// format and saves the output in the 'data' buffer of
-	// 'size' length (both 'data' and 'size' are output
-	// parameters, i.e. the '*data' buffer is allocated by
-	// the function). In case of success, this function
-	// returns '1', otherwise it returns '0' (in case of
-	// errors)
+  // Encodes the private part of the passed 'key' in DER
+  // format and saves the output in the 'data' buffer of
+  // 'size' length (both 'data' and 'size' are output
+  // parameters, i.e. the '*data' buffer is allocated by
+  // the function). In case of success, this function
+  // returns '1', otherwise it returns '0' (in case of
+  // errors)
 
-	BIO * mem_bio = NULL;
-	BUF_MEM * buf_mem = NULL;
-		// I/O Facility
+  BIO * mem_bio = NULL;
+  BUF_MEM * buf_mem = NULL;
+    // I/O Facility
 
-	// Input Check
-	if (!key || !out_data || !out_size) return 0;
+  // Input Check
+  if (!key || !out_data || !out_size) return 0;
 
-	// Make sure we have a zeroized pointer
-	*out_data = NULL;
-	*out_size = 0;
+  // Make sure we have a zeroized pointer
+  *out_data = NULL;
+  *out_size = 0;
 
-	// Creates a new Mem Bio
-	if ((mem_bio = BIO_new(BIO_s_mem())) != NULL) {
-		// Writes the data to be BIO
-		if (i2d_PrivateKey_bio(mem_bio, key) > 0) {
-			// Gets the internal buffer
-			BIO_get_mem_ptr(mem_bio, &buf_mem);
-			// Copy the Memory
-			if (buf_mem->data != NULL && buf_mem->length > 0) {
-				// Assigns the data to the output parameter
-				if ((*out_data = (unsigned char *) OPENSSL_malloc(buf_mem->length)) != NULL) {
-					// Copy the Memory
-					memcpy(*out_data, buf_mem->data, buf_mem->length);
-					// Sets the size
-					*out_size = buf_mem->length;
-					// Free the Memory
-					BIO_free_all(mem_bio);
-					// Success
-					return 1;
-				}
-			}
-		}
-	}
+  // Creates a new Mem Bio
+  if ((mem_bio = BIO_new(BIO_s_mem())) != NULL) {
+    // Writes the data to be BIO
+    if (i2d_PrivateKey_bio(mem_bio, key) > 0) {
+      // Gets the internal buffer
+      BIO_get_mem_ptr(mem_bio, &buf_mem);
+      // Copy the Memory
+      if (buf_mem->data != NULL && buf_mem->length > 0) {
+        // Assigns the data to the output parameter
+        if ((*out_data = (unsigned char *) OPENSSL_malloc(buf_mem->length)) != NULL) {
+          // Copy the Memory
+          memcpy(*out_data, buf_mem->data, buf_mem->length);
+          // Sets the size
+          *out_size = buf_mem->length;
+          // Free the Memory
+          BIO_free_all(mem_bio);
+          // Success
+          return 1;
+        }
+      }
+    }
+  }
 
-	// If we reach here, we had an error
-	if (mem_bio) BIO_free_all(mem_bio);
+  // If we reach here, we had an error
+  if (mem_bio) BIO_free_all(mem_bio);
 
-	// Error
-	return 0;
+  // Error
+  return 0;
 }
 
 static int _privkey_encode_sym(unsigned char       ** data,
-		                           size_t               * data_size,
+                               size_t               * data_size,
                                const unsigned char  * key,
                                size_t                 key_size) {
 
-	ASN1_OCTET_STRING val;
-		// Temporary Container
+  ASN1_OCTET_STRING val;
+    // Temporary Container
 
-	unsigned char * tmp_pnt;
-		// Pointer for parsing the ASN1 structure
+  unsigned char * tmp_pnt;
+    // Pointer for parsing the ASN1 structure
 
-	// Input check
-	if (!data || !data_size || !key || !key_size) return 0;
+  // Input check
+  if (!data || !data_size || !key || !key_size) return 0;
 
-	// Zeroizes the ASN1 data structure
-	memset(&val, 0, sizeof(ASN1_OCTET_STRING));
+  // Zeroizes the ASN1 data structure
+  memset(&val, 0, sizeof(ASN1_OCTET_STRING));
 
   // Assigns the value to the value field
   if (1 != ASN1_OCTET_STRING_set(&val, key, key_size)) return 0;
@@ -390,47 +390,47 @@ static int _privkey_encode_sym(unsigned char       ** data,
 EVP_PKEY * _privkey_decode(const unsigned char * data,
                            size_t                size) {
 
-	// Parses a private key and returns it to the caller.
-	// The data should hold the DER representation of the
-	// private key structure. This function returns a valid
-	// pointer to an 'EVP_PKEY' structure if successful and
-	// the 'NULL' value in case of errors
+  // Parses a private key and returns it to the caller.
+  // The data should hold the DER representation of the
+  // private key structure. This function returns a valid
+  // pointer to an 'EVP_PKEY' structure if successful and
+  // the 'NULL' value in case of errors
 
-	EVP_PKEY * ret = NULL;
-		// Return Container
+  EVP_PKEY * ret = NULL;
+    // Return Container
 
-	BIO * mem_bio = NULL;
-		// BIO Container
+  BIO * mem_bio = NULL;
+    // BIO Container
 
-	// Input Check
-	if (!data || size == 0) return 0;
+  // Input Check
+  if (!data || size == 0) return 0;
 
-	// Creates a new Mem Bio
-	if ((mem_bio = BIO_new(BIO_s_mem())) != NULL) {
-		// Writes the data to be BIO
-		if (BIO_write(mem_bio, data, size) > 0) {
-			// Decodes the Key
-			if ((ret = d2i_PrivateKey_bio(mem_bio, NULL)) == NULL) {
-				// Error
-				goto err;
-			}
-		}
-	}
+  // Creates a new Mem Bio
+  if ((mem_bio = BIO_new(BIO_s_mem())) != NULL) {
+    // Writes the data to be BIO
+    if (BIO_write(mem_bio, data, size) > 0) {
+      // Decodes the Key
+      if ((ret = d2i_PrivateKey_bio(mem_bio, NULL)) == NULL) {
+        // Error
+        goto err;
+      }
+    }
+  }
 
-	// Free the Memory associated with the BIO
-	if (mem_bio) BIO_free(mem_bio);
+  // Free the Memory associated with the BIO
+  if (mem_bio) BIO_free(mem_bio);
 
-	// Success
-	return ret;
+  // Success
+  return ret;
 
 err:
 
-	ERR_print_errors_fp(stderr);
+  ERR_print_errors_fp(stderr);
 
-	if (mem_bio) BIO_free(mem_bio);
-	if (ret) EVP_PKEY_free(ret);
+  if (mem_bio) BIO_free(mem_bio);
+  if (ret) EVP_PKEY_free(ret);
 
-	return NULL;
+  return NULL;
 }
 
 static int _privkey_decode_sym(unsigned char       * key,
@@ -438,32 +438,32 @@ static int _privkey_decode_sym(unsigned char       * key,
                                const unsigned char * data,
                                size_t                data_size) {
 
-	ASN1_OCTET_STRING val;
-	ASN1_OCTET_STRING * val_pnt = NULL;
-		// Temporary Container
+  ASN1_OCTET_STRING val;
+  ASN1_OCTET_STRING * val_pnt = NULL;
+    // Temporary Container
 
-	const unsigned char * tmp_pnt = NULL;
-		// Pointer for parsing the ASN1 structure
+  const unsigned char * tmp_pnt = NULL;
+    // Pointer for parsing the ASN1 structure
 
   size_t ret_size = 0;
 
-	// Input check
-	if (!data || !data_size || !key || !key_size) return 0;
+  // Input check
+  if (!data || !data_size || !key || !key_size) return 0;
 
-	// Zeroizes the ASN1 data structure
-	memset(&val, 0, sizeof(ASN1_OCTET_STRING));
+  // Zeroizes the ASN1 data structure
+  memset(&val, 0, sizeof(ASN1_OCTET_STRING));
 
-	// Parses the HMAC value
-	val_pnt = &val;
-	tmp_pnt = data;
-	if (NULL == d2i_ASN1_OCTET_STRING(&val_pnt, &tmp_pnt, data_size)) return 0;
+  // Parses the HMAC value
+  val_pnt = &val;
+  tmp_pnt = data;
+  if (NULL == d2i_ASN1_OCTET_STRING(&val_pnt, &tmp_pnt, data_size)) return 0;
 
   // Gets the size of data to be copied over
   ret_size = val.length > EVP_MAX_KEY_LENGTH ? EVP_MAX_KEY_LENGTH : val.length;
 
-	// Copy the data to the caller
+  // Copy the data to the caller
   memcpy(key, val.data,ret_size);
-	*key_size = ret_size;
+  *key_size = ret_size;
 
   // Cleanse the Memory
   OPENSSL_cleanse(val.data, val.length);
@@ -476,101 +476,101 @@ static int _privkey_decode_sym(unsigned char       * key,
 /*
 static int _get_md_nid(int v) {
 
-	// Returns the NID for the supported algorithm
-	switch (v & LIBEC_DIGEST_ALG_MASK) {
+  // Returns the NID for the supported algorithm
+  switch (v & LIBEC_DIGEST_ALG_MASK) {
 
-		case LIBEC_DIGEST_ALG_SHA256: {
-			return NID_sha256;
-		} break;
+    case LIBEC_DIGEST_ALG_SHA256: {
+      return NID_sha256;
+    } break;
 
-		case LIBEC_DIGEST_ALG_SHA384: {
-			return NID_sha256;
-		} break;
+    case LIBEC_DIGEST_ALG_SHA384: {
+      return NID_sha256;
+    } break;
 
-		case LIBEC_DIGEST_ALG_SHA512: {
-			return NID_sha512;
-		} break;
+    case LIBEC_DIGEST_ALG_SHA512: {
+      return NID_sha512;
+    } break;
 
-		default: {
-			break;
-		}
-	}
+    default: {
+      break;
+    }
+  }
 
-	return NID_undef;
+  return NID_undef;
 }
 */
 
 static const EVP_MD * _get_evp_md(int v) {
 
-	// Returns the NID for the supported algorithm
-	switch (v & LIBEC_DIGEST_ALG_MASK) {
+  // Returns the NID for the supported algorithm
+  switch (v & LIBEC_DIGEST_ALG_MASK) {
 
-		case LIBEC_DIGEST_ALG_SHA256: {
-			return EVP_sha256();
-		} break;
+    case LIBEC_DIGEST_ALG_SHA256: {
+      return EVP_sha256();
+    } break;
 
-		case LIBEC_DIGEST_ALG_SHA384: {
-			return EVP_sha384();
-		} break;
+    case LIBEC_DIGEST_ALG_SHA384: {
+      return EVP_sha384();
+    } break;
 
-		case LIBEC_DIGEST_ALG_SHA512: {
-			return EVP_sha512();
-		} break;
+    case LIBEC_DIGEST_ALG_SHA512: {
+      return EVP_sha512();
+    } break;
 
-		default: {
-			break;
-		}
-	}
+    default: {
+      break;
+    }
+  }
 
-	return NID_undef;
+  return NID_undef;
 }
 
 /*
 static int _get_pkey_type(int v) {
 
-	switch (v & LIBEC_ALGOR_MASK) {
+  switch (v & LIBEC_ALGOR_MASK) {
 
-		case LIBEC_ALGOR_RSA: {
-			return EVP_PKEY_RSA;
-		} break;
+    case LIBEC_ALGOR_RSA: {
+      return EVP_PKEY_RSA;
+    } break;
 
-		case LIBEC_ALGOR_ECDSA: {
-			return EVP_PKEY_EC;
-		} break;
+    case LIBEC_ALGOR_ECDSA: {
+      return EVP_PKEY_EC;
+    } break;
 
-		default: {
-			break;
-		}
-	}
+    default: {
+      break;
+    }
+  }
 
-	return NID_undef;
+  return NID_undef;
 }
 */
 
 static const EVP_CIPHER * _get_evp_cipher(int v) {
 
-	// Returns the NID for the supported algorithm
-	switch (v & LIBEC_ENC_ALG_MASK) {
+  // Returns the NID for the supported algorithm
+  switch (v & LIBEC_ENC_ALG_MASK) {
 
     // 128 Bit AES Encryption
-		case LIBEC_ENC_ALG_AES_128: {
+    case LIBEC_ENC_ALG_AES_128: {
 
-		  switch( v & LIBEC_ENC_MODE_MASK) {
-		    case LIBEC_ENC_MODE_GCM : {
-		      return EVP_aes_128_gcm();
-		    } break;
+      switch( v & LIBEC_ENC_MODE_MASK) {
+        case LIBEC_ENC_MODE_GCM : {
+          return EVP_aes_128_gcm();
+        } break;
 
-		    case LIBEC_ENC_MODE_CBC : {
+        case LIBEC_ENC_MODE_CBC : {
           return EVP_aes_128_cbc();
-		    } break;
+        } break;
 
-		    default:
-		      break;
-		  }
-		} break;
+        default:
+          break;
+      }
+    } break;
 
     // 192 Bit AES Encryption
-		case LIBEC_ENC_ALG_AES_192: {
+    case LIBEC_ENC_ALG_AES_192: {
 
       switch( v & LIBEC_ENC_MODE_MASK) {
         case LIBEC_ENC_MODE_GCM : {
@@ -585,10 +585,10 @@ static const EVP_CIPHER * _get_evp_cipher(int v) {
           break;
       }
 
-		} break;
+    } break;
 
     // 256 Bit AES Encryption
-		case LIBEC_ENC_ALG_AES_256: {
+    case LIBEC_ENC_ALG_AES_256: {
 
       switch( v & LIBEC_ENC_MODE_MASK) {
         case LIBEC_ENC_MODE_GCM : {
@@ -603,31 +603,31 @@ static const EVP_CIPHER * _get_evp_cipher(int v) {
           break;
       }
 
-		} break;
+    } break;
 
-		default: {
-			break;
-		}
-	}
+    default: {
+      break;
+    }
+  }
 
-	return NID_undef;
+  return NID_undef;
 }
 
 size_t _get_identifier(const unsigned char ** data,
                        LIBEC_DIGEST_ALG     * dgst_alg,
                        LIBEC_DIGEST         * x_k) {
 
-	// Input Check
-	if (!x_k || !x_k->data) return 0;
+  // Input Check
+  if (!x_k || !x_k->data) return 0;
 
-	// Sets the output pointer (after the prefix)
-	if (data) *data = x_k->data + LIBEC_SIGNATURE_PREFIX_SIZE;
+  // Sets the output pointer (after the prefix)
+  if (data) *data = x_k->data + LIBEC_SIGNATURE_PREFIX_SIZE;
 
   // Sets the output algorithm value
   if (dgst_alg) *dgst_alg = x_k->data[0] & LIBEC_DIGEST_ALG_MASK;
 
-	// Returns the size (minus the prefix len)
-	return (size_t) x_k->length - LIBEC_SIGNATURE_PREFIX_SIZE;
+  // Returns the size (minus the prefix len)
+  return (size_t) x_k->length - LIBEC_SIGNATURE_PREFIX_SIZE;
 }
 
 // ==============================
@@ -1143,7 +1143,7 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX         ** ctx,
 
   // Input Check
   if (!d_key || !enc_data || !enc_data->data || enc_data->length < 1)
-		return NULL;
+    return NULL;
 
   // Gets the Algor and Mode
   // alg = enc_data->data[0] & LIBEC_ENC_ALG_MASK;
@@ -1189,14 +1189,14 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX         ** ctx,
 
           // Allocates the Context for Public Key Operations
           if ((inner_ctx->pkey_ctx = 
-									EVP_PKEY_CTX_new(d_key->pkey, NULL)) == NULL) goto err;
+                  EVP_PKEY_CTX_new(d_key->pkey, NULL)) == NULL) goto err;
 
           // Initializes the Encryption (only works with RSA)
           if (1 != EVP_PKEY_decrypt_init(inner_ctx->pkey_ctx)) goto err;
 
           // Gets the size of the final encryption
           if (EVP_PKEY_decrypt(inner_ctx->pkey_ctx,
-          			NULL,
+                NULL,
                 &ret->skey.data_size,
                 enc_data->data + LIBEC_ENCRYPTED_PREFIX_SIZE,
                 enc_data->length - LIBEC_ENCRYPTED_PREFIX_SIZE) <= 0) goto err;
@@ -1221,11 +1221,11 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX         ** ctx,
         case EVP_PKEY_EC : {
 
           // This case is a bit more complex, because we need to generate
-					// another point on the curve, then use the destination key
-					// (d_key) and the ephemeral key (d_eph) to derive the encryption
-					// key that will be used to encrypt the message
+          // another point on the curve, then use the destination key
+          // (d_key) and the ephemeral key (d_eph) to derive the encryption
+          // key that will be used to encrypt the message
           fprintf(stderr, 
-								"ERROR: Encrypting for an EC key is NOT Implemented!\n");
+                "ERROR: Encrypting for an EC key is NOT Implemented!\n");
           goto err;
 
         } break;
@@ -1250,8 +1250,8 @@ LIBEC_KEY * _decrypt_key(LIBEC_CTX         ** ctx,
       // Checks that the size of the encrypted ciphertext is not bigger than
       // the destination key holder (ret->skey.data)
       if (sizeof(ret->skey.data) < inner_ctx->dec_data 
-											             + inner_ctx->dec_data_size 
-																	 - inner_ctx->dec_data_next) goto err;
+                                   + inner_ctx->dec_data_size 
+                                   - inner_ctx->dec_data_next) goto err;
 
       // Decrypts the key data
       if (1 != EVP_DecryptUpdate(inner_ctx->cipher_ctx,
@@ -1316,84 +1316,84 @@ err:
 // ==================
 
 void LIBEC_cleanup() {
-	ERR_free_strings();
-	X509V3_EXT_cleanup();
-	OBJ_cleanup();
-	EVP_cleanup();
-	CRYPTO_cleanup_all_ex_data();
+  ERR_free_strings();
+  X509V3_EXT_cleanup();
+  OBJ_cleanup();
+  EVP_cleanup();
+  CRYPTO_cleanup_all_ex_data();
 }
 
 void LIBEC_init() {
 
-	int i = 0;
+  int i = 0;
 
-	// Used to initialize config and dynamic ENGINE config
-	// OPENSSL_config(NULL);
+  // Used to initialize config and dynamic ENGINE config
+  // OPENSSL_config(NULL);
 
-	X509V3_add_standard_extensions();
-	OpenSSL_add_all_algorithms();
-	OpenSSL_add_all_digests();
-	OpenSSL_add_all_ciphers();
+  X509V3_add_standard_extensions();
+  OpenSSL_add_all_algorithms();
+  OpenSSL_add_all_digests();
+  OpenSSL_add_all_ciphers();
 
-	ERR_load_ERR_strings();
-	ERR_load_crypto_strings();
+  ERR_load_ERR_strings();
+  ERR_load_crypto_strings();
 
-	lock_cs=OPENSSL_malloc((size_t) (((size_t)CRYPTO_num_locks()) *
-			sizeof(pthread_mutex_t)));
+  lock_cs=OPENSSL_malloc((size_t) (((size_t)CRYPTO_num_locks()) *
+      sizeof(pthread_mutex_t)));
 
-	lock_count=OPENSSL_malloc(((size_t) (CRYPTO_num_locks()) *
-			sizeof(long)));
+  lock_count=OPENSSL_malloc(((size_t) (CRYPTO_num_locks()) *
+      sizeof(long)));
 
-	for (i=0; i<CRYPTO_num_locks(); i++) {
-		lock_count[i]=0;
-		pthread_mutex_init(&(lock_cs[i]),NULL);
-	}
+  for (i=0; i<CRYPTO_num_locks(); i++) {
+    lock_count[i]=0;
+    pthread_mutex_init(&(lock_cs[i]),NULL);
+  }
 
-	CRYPTO_set_id_callback((unsigned long (*)())pthreads_thread_id);
-	CRYPTO_set_locking_callback((void (*)())pthreads_locking_callback);
+  CRYPTO_set_id_callback((unsigned long (*)())pthreads_thread_id);
+  CRYPTO_set_locking_callback((void (*)())pthreads_locking_callback);
 
 
 #ifdef LIBEC_ENABLE_ENGINE
 #ifndef OPENSSL_NO_ENGINE              // OPENSSL_NO_ENGINE //
 
-	// Initializes the Engine SubSystem and loads the built-in
-	// RDRAND engine (supposedly has much better performances for
-	// random number generations as it uses (OpenSSL 1.0.1+) the
-	// 3rd generation Core i5 or i7 processors Secure Key Technology
-	// https://software.intel.com/en-us/blogs/2012/05/14/what-is-intelr-secure-key-technology
-	// https://software.intel.com/en-us/articles/performance-impact-of-intel-secure-key-on-openssl
-	ENGINE_load_builtin_engines();
-	ENGINE_load_rdrand(); // <<--- This is called in the previous call, but needs to be
-	                      //       explicitly invoked in future versions of OpenSSL
-	// OPENSSL_cpuid_setup(); <<--- Called in ENGINE_load_builtin_engines()
+  // Initializes the Engine SubSystem and loads the built-in
+  // RDRAND engine (supposedly has much better performances for
+  // random number generations as it uses (OpenSSL 1.0.1+) the
+  // 3rd generation Core i5 or i7 processors Secure Key Technology
+  // https://software.intel.com/en-us/blogs/2012/05/14/what-is-intelr-secure-key-technology
+  // https://software.intel.com/en-us/articles/performance-impact-of-intel-secure-key-on-openssl
+  ENGINE_load_builtin_engines();
+  ENGINE_load_rdrand(); // <<--- This is called in the previous call, but needs to be
+                        //       explicitly invoked in future versions of OpenSSL
+  // OPENSSL_cpuid_setup(); <<--- Called in ENGINE_load_builtin_engines()
 
 #ifndef OPENSSL_NO_STATIC_ENGINE       // OPENSSL_NO_STATIC_ENGINE //
 
 // Loading the rdrand engine makes sense only on Intel platforms
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86) || defined(__ia64) || defined(__itanium__) || defined(_M_IA64) // Intel Processors
 
-	int rv = -1;
+  int rv = -1;
 
-	// Gets the reference to the RDRAND engine
-	if ((rand_eng = ENGINE_by_id("rdrand")) != 0) {
+  // Gets the reference to the RDRAND engine
+  if ((rand_eng = ENGINE_by_id("rdrand")) != 0) {
 
-		// Here we have the engine reference, we need to initialize it
-		if ((rv = ENGINE_init(rand_eng)) == 0) {
-			// Let's report the error and exit (it should not happen we
-			// cannot initialize the RDRAND engine)
-			ERR_print_errors_fp(stderr);
-			exit(1);
-		}
+    // Here we have the engine reference, we need to initialize it
+    if ((rv = ENGINE_init(rand_eng)) == 0) {
+      // Let's report the error and exit (it should not happen we
+      // cannot initialize the RDRAND engine)
+      ERR_print_errors_fp(stderr);
+      exit(1);
+    }
 
-		// Let's now register the RDRAND engine as the default RND gen
-		if ((rv = ENGINE_set_default(rand_eng, ENGINE_METHOD_RAND)) == 0) {
-			// Prints the Error and exists (non-recoverable error)
-			ERR_print_errors_fp(stderr);
-			exit(1);
-		}
-	}
+    // Let's now register the RDRAND engine as the default RND gen
+    if ((rv = ENGINE_set_default(rand_eng, ENGINE_METHOD_RAND)) == 0) {
+      // Prints the Error and exists (non-recoverable error)
+      ERR_print_errors_fp(stderr);
+      exit(1);
+    }
+  }
 
-	ERR_print_errors_fp(stderr);
+  ERR_print_errors_fp(stderr);
 
 #endif // Intel Processors //
 
@@ -1407,12 +1407,12 @@ void LIBEC_init() {
 int LIBEC_data_cmp(const unsigned char *h1, size_t h1_size,
                          const unsigned char *h2, size_t h2_size) {
 
-	// Checks the different parameters
-	if (!h1 || !h1_size || !h2 || !h2_size ||
-			h1_size != h2_size || memcmp(h1, h2, h1_size)) return 0;
+  // Checks the different parameters
+  if (!h1 || !h1_size || !h2 || !h2_size ||
+      h1_size != h2_size || memcmp(h1, h2, h1_size)) return 0;
 
-	// Success, they are identical
-	return 1;
+  // Success, they are identical
+  return 1;
 }
 
 
@@ -1422,56 +1422,56 @@ int LIBEC_data_cmp(const unsigned char *h1, size_t h1_size,
 
 LIBEC_CTX * LIBEC_CTX_new() {
 
-	LIBEC_CTX * ret = NULL;
+  LIBEC_CTX * ret = NULL;
 
-	// Allocates the memory
-	if ((ret = OPENSSL_malloc(sizeof(LIBEC_CTX))) == NULL) return NULL;
+  // Allocates the memory
+  if ((ret = OPENSSL_malloc(sizeof(LIBEC_CTX))) == NULL) return NULL;
 
-	// Zeroizes the memory
-	memset(ret, 0, sizeof(LIBEC_CTX));
+  // Zeroizes the memory
+  memset(ret, 0, sizeof(LIBEC_CTX));
 
-	// Initializes the Context for HMAC(s)
-	if ((ret->hmac_ctx = HMAC_CTX_new()) == NULL) goto err;
-	HMAC_CTX_init(ret->hmac_ctx);
+  // Initializes the Context for HMAC(s)
+  if ((ret->hmac_ctx = HMAC_CTX_new()) == NULL) goto err;
+  HMAC_CTX_init(ret->hmac_ctx);
 
-	// Initializes the context for Digests
-	if ((ret->md_ctx = EVP_MD_CTX_new()) == NULL) goto err;
-	EVP_MD_CTX_init(ret->md_ctx);
+  // Initializes the context for Digests
+  if ((ret->md_ctx = EVP_MD_CTX_new()) == NULL) goto err;
+  EVP_MD_CTX_init(ret->md_ctx);
 
-	// Initializes the context for Encryption
+  // Initializes the context for Encryption
   if ((ret->cipher_ctx = EVP_CIPHER_CTX_new()) == NULL) goto err;
   EVP_CIPHER_CTX_init(ret->cipher_ctx);
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	// Cleanup Memory
+  // Cleanup Memory
   if (ret) LIBEC_CTX_free(ret);
 
-	// Report the Error
-	return NULL;
+  // Report the Error
+  return NULL;
 }
 
 int LIBEC_CTX_cleanup(LIBEC_CTX * ctx) {
 
-	// Input Checks
-	if (!ctx || !ctx->hmac_ctx || !ctx->md_ctx) return 0;
+  // Input Checks
+  if (!ctx || !ctx->hmac_ctx || !ctx->md_ctx) return 0;
 
-	// Cleanup the HMAC ctx
-	if (ctx->hmac_ctx) HMAC_CTX_cleanup(ctx->hmac_ctx);
+  // Cleanup the HMAC ctx
+  if (ctx->hmac_ctx) HMAC_CTX_cleanup(ctx->hmac_ctx);
 
-	// Cleanup the EVP_MD ctx
-	if (ctx->md_ctx) EVP_MD_CTX_cleanup(ctx->md_ctx);
+  // Cleanup the EVP_MD ctx
+  if (ctx->md_ctx) EVP_MD_CTX_cleanup(ctx->md_ctx);
 
-	// Cleanup the Encryption ctx
-	if (ctx->cipher_ctx) EVP_CIPHER_CTX_cleanup(ctx->cipher_ctx);
+  // Cleanup the Encryption ctx
+  if (ctx->cipher_ctx) EVP_CIPHER_CTX_cleanup(ctx->cipher_ctx);
 
   // Cleanup Key Digest
-	if (ctx->k_enc.data) OPENSSL_free(ctx->k_enc.data);
-	ctx->k_enc.data = NULL;
-	ctx->k_enc.length = 0;
+  if (ctx->k_enc.data) OPENSSL_free(ctx->k_enc.data);
+  ctx->k_enc.data = NULL;
+  ctx->k_enc.length = 0;
 
   // Cleanup the Encryption Key
   if (ctx->enc_data) OPENSSL_free(ctx->enc_data);
@@ -1494,22 +1494,22 @@ int LIBEC_CTX_cleanup(LIBEC_CTX * ctx) {
     ctx->pkey_ctx = NULL;
   }
 
-	// Success
-	return 1;
+  // Success
+  return 1;
 }
 
 void LIBEC_CTX_free(LIBEC_CTX * ctx) {
 
-	// Input Check
-	if (!ctx) return;
+  // Input Check
+  if (!ctx) return;
 
-	// Cleanup
-	LIBEC_CTX_cleanup(ctx);
+  // Cleanup
+  LIBEC_CTX_cleanup(ctx);
 
-	// Free the contexts
-	if (ctx->hmac_ctx) HMAC_CTX_free(ctx->hmac_ctx);
+  // Free the contexts
+  if (ctx->hmac_ctx) HMAC_CTX_free(ctx->hmac_ctx);
 
-	if (ctx->md_ctx) EVP_MD_CTX_free(ctx->md_ctx);
+  if (ctx->md_ctx) EVP_MD_CTX_free(ctx->md_ctx);
 
   if (ctx->cipher_ctx) EVP_CIPHER_CTX_free(ctx->cipher_ctx);
 
@@ -1521,11 +1521,11 @@ void LIBEC_CTX_free(LIBEC_CTX * ctx) {
   // Cleanup the encrypted key data (from encryption ops)
   ASN1_OCTET_STRING_cleanup(&ctx->k_enc);
 
-	// Free the CTX memory
-	OPENSSL_free(ctx);
+  // Free the CTX memory
+  OPENSSL_free(ctx);
 
-	// All Done
-	return;
+  // All Done
+  return;
 }
 
 // ========================
@@ -1546,182 +1546,182 @@ void LIBEC_DIGEST_cleanup(LIBEC_DIGEST * x) {
   return;
 }
 
-LIBEC_DIGEST * LIBEC_DIGEST_new(LIBEC_DIGEST     ** dgst,
-		                                        LIBEC_DIGEST_ALG    alg,
-		                                        const unsigned char     * data,
-											                      size_t                    size) {
+LIBEC_DIGEST * LIBEC_DIGEST_new(LIBEC_DIGEST        ** dgst,
+                                LIBEC_DIGEST_ALG       alg,
+                                const unsigned char  * data,
+                                size_t                 size) {
 
-	LIBEC_DIGEST * ret = NULL;
-		// Container for the final return structure
+  LIBEC_DIGEST * ret = NULL;
+    // Container for the final return structure
 
-	unsigned char * buf = NULL;
-	unsigned int buf_len = 0;
-		// Digest Value Buffer
+  unsigned char * buf = NULL;
+  unsigned int buf_len = 0;
+    // Digest Value Buffer
 
   const EVP_MD * md = NULL;
     // OpenSSL MD
 
-	// Input Check
-	if (!data || !size) return NULL;
+  // Input Check
+  if (!data || !size) return NULL;
 
-	// Setup the Container's pointers
-	if (dgst && *dgst) {
-		// Use the passed container
-		ret = *dgst;
-		// Cleanup the Key
-		LIBEC_DIGEST_cleanup(ret);
-	} else {
-		// Allocates the memory for the container
-		if ((ret = LIBEC_DIGEST_new_null()) == NULL) return NULL;
-	}
+  // Setup the Container's pointers
+  if (dgst && *dgst) {
+    // Use the passed container
+    ret = *dgst;
+    // Cleanup the Key
+    LIBEC_DIGEST_cleanup(ret);
+  } else {
+    // Allocates the memory for the container
+    if ((ret = LIBEC_DIGEST_new_null()) == NULL) return NULL;
+  }
 
-	// Gets the algorithm
-	if (!alg) alg = LIBEC_DIGEST_ALG_DEFAULT;
+  // Gets the algorithm
+  if (!alg) alg = LIBEC_DIGEST_ALG_DEFAULT;
 
-	// Transforms the Algorithm identifier to the EVP_MD from OpenSSL
-	if ((md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT)) == NULL) goto err;
+  // Transforms the Algorithm identifier to the EVP_MD from OpenSSL
+  if ((md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT)) == NULL) goto err;
 
-	// Allocates the Buffer Memory
-	if ((buf = OPENSSL_malloc(EVP_MD_size(md) + LIBEC_DIGEST_PREFIX_SIZE)) == NULL) goto err;
+  // Allocates the Buffer Memory
+  if ((buf = OPENSSL_malloc(EVP_MD_size(md) + LIBEC_DIGEST_PREFIX_SIZE)) == NULL) goto err;
 
-	// Calculates the digest and saves it in the allocated buffer
-	if (1 != EVP_Digest(data, size, buf + LIBEC_DIGEST_PREFIX_SIZE, &buf_len, md, NULL)) goto err;
+  // Calculates the digest and saves it in the allocated buffer
+  if (1 != EVP_Digest(data, size, buf + LIBEC_DIGEST_PREFIX_SIZE, &buf_len, md, NULL)) goto err;
 
-	// Sets the algorithm identifier
-	switch(EVP_MD_type(md)) {
-		case NID_sha256: {
-			buf[0] = LIBEC_DIGEST_ALG_SHA256 &
-					 LIBEC_DIGEST_ALG_MASK;
-		} break;
+  // Sets the algorithm identifier
+  switch(EVP_MD_type(md)) {
+    case NID_sha256: {
+      buf[0] = LIBEC_DIGEST_ALG_SHA256 &
+           LIBEC_DIGEST_ALG_MASK;
+    } break;
 
-		case NID_sha384: {
-			buf[0] = LIBEC_DIGEST_ALG_SHA384 &
-					 LIBEC_DIGEST_ALG_MASK;
-		} break;
+    case NID_sha384: {
+      buf[0] = LIBEC_DIGEST_ALG_SHA384 &
+           LIBEC_DIGEST_ALG_MASK;
+    } break;
 
-		case NID_sha512: {
-			buf[0] = LIBEC_DIGEST_ALG_SHA512 &
-					 LIBEC_DIGEST_ALG_MASK;
-		} break;
+    case NID_sha512: {
+      buf[0] = LIBEC_DIGEST_ALG_SHA512 &
+           LIBEC_DIGEST_ALG_MASK;
+    } break;
 
-		default:
-			// Error if not supported algor
-			goto err;
-	}
+    default:
+      // Error if not supported algor
+      goto err;
+  }
 
-	// Now let's transfer the buffer to the output string
-	ret->data = buf;
-	ret->length = buf_len + LIBEC_DIGEST_PREFIX_SIZE;
+  // Now let's transfer the buffer to the output string
+  ret->data = buf;
+  ret->length = buf_len + LIBEC_DIGEST_PREFIX_SIZE;
 
-	// Sets the output parameter
-	if (dgst) *dgst = ret;
+  // Sets the output parameter
+  if (dgst) *dgst = ret;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	if (!(dgst && *dgst)) {
-		// Frees allocated memory
-		if (ret) LIBEC_DIGEST_free(ret);
-		// Resets the output parameter
-		*dgst = NULL;
-	}
+  if (!(dgst && *dgst)) {
+    // Frees allocated memory
+    if (ret) LIBEC_DIGEST_free(ret);
+    // Resets the output parameter
+    *dgst = NULL;
+  }
 
-	// Returns the error
-	return NULL;
+  // Returns the error
+  return NULL;
 }
 
-int LIBEC_DIGEST_encode(unsigned char            ** data,
-                              size_t                    * size,
-                              const LIBEC_DIGEST  * dgst) {
-	int i = 0;
-	unsigned char * tmp = 0;
+int LIBEC_DIGEST_encode(unsigned char      ** data,
+                        size_t              * size,
+                        const LIBEC_DIGEST  * dgst) {
+  int i = 0;
+  unsigned char * tmp = 0;
 
-	LIBEC_DIGEST * tmp_dgst = (LIBEC_DIGEST *)dgst;
+  LIBEC_DIGEST * tmp_dgst = (LIBEC_DIGEST *)dgst;
 
-	// Input Checks
-	if (!data || !size || !dgst) return 0;
+  // Input Checks
+  if (!data || !size || !dgst) return 0;
 
-	// Gets the encoded size
-	if ((i = i2d_ASN1_OCTET_STRING(tmp_dgst, NULL)) < 1) return 0;
+  // Gets the encoded size
+  if ((i = i2d_ASN1_OCTET_STRING(tmp_dgst, NULL)) < 1) return 0;
 
-	// Allocates the right space
-	if ((*data = OPENSSL_malloc(i)) == NULL) return 0;
+  // Allocates the right space
+  if ((*data = OPENSSL_malloc(i)) == NULL) return 0;
 
-	// Encodes the value
-	tmp = *data;
-	if ((i = i2d_ASN1_OCTET_STRING(tmp_dgst, &tmp)) <= 0) {
-		OPENSSL_free(*data);
-		return 0;
-	}
+  // Encodes the value
+  tmp = *data;
+  if ((i = i2d_ASN1_OCTET_STRING(tmp_dgst, &tmp)) <= 0) {
+    OPENSSL_free(*data);
+    return 0;
+  }
 
-	// Sets the output value for the size
-	*size = i;
+  // Sets the output value for the size
+  *size = i;
 
-	// Returns success
-	return 1;
+  // Returns success
+  return 1;
 }
 
-LIBEC_DIGEST * LIBEC_DIGEST_decode(LIBEC_DIGEST  ** dgst,
-                                               const unsigned char ** next,
-											                         const unsigned char  * data,
-                                               size_t                 size) {
+LIBEC_DIGEST * LIBEC_DIGEST_decode(LIBEC_DIGEST        ** dgst,
+                                   const unsigned char ** next,
+                                   const unsigned char  * data,
+                                   size_t                 size) {
 
-	LIBEC_DIGEST * ret = NULL;
-	const unsigned char *p = data;
+  LIBEC_DIGEST * ret = NULL;
+  const unsigned char *p = data;
 
-	// Input Check
-	if (!data && !size) return NULL;
+  // Input Check
+  if (!data && !size) return NULL;
 
-	// Decode the Structure
-	if ((ret = d2i_ASN1_OCTET_STRING(dgst, &p, size)) == NULL) return NULL;
+  // Decode the Structure
+  if ((ret = d2i_ASN1_OCTET_STRING(dgst, &p, size)) == NULL) return NULL;
 
-	// Adjust the output parameters
-	if (next) *next = p;
+  // Adjust the output parameters
+  if (next) *next = p;
 
-	// Success
-	return ret;
+  // Success
+  return ret;
 }
 
 LIBEC_DIGEST_ALG LIBEC_DIGEST_algor(const LIBEC_DIGEST *dgst) {
 
-	uint8_t val = 0;
+  uint8_t val = 0;
 
-	// Input Checks
-	if (!dgst || !dgst->data || dgst->length < 1)
-		return LIBEC_DIGEST_ALG_UNKNOWN;
+  // Input Checks
+  if (!dgst || !dgst->data || dgst->length < 1)
+    return LIBEC_DIGEST_ALG_UNKNOWN;
 
-	// Gets the stored algor
-	val = dgst->data[0] & LIBEC_DIGEST_ALG_MASK;
+  // Gets the stored algor
+  val = dgst->data[0] & LIBEC_DIGEST_ALG_MASK;
 
-	// Checks we have a valid value
-	switch (val) {
-		case LIBEC_DIGEST_ALG_SHA256:
-		case LIBEC_DIGEST_ALG_SHA384:
-		case LIBEC_DIGEST_ALG_SHA512:
-			break;
+  // Checks we have a valid value
+  switch (val) {
+    case LIBEC_DIGEST_ALG_SHA256:
+    case LIBEC_DIGEST_ALG_SHA384:
+    case LIBEC_DIGEST_ALG_SHA512:
+      break;
 
-		default:
-			return LIBEC_DIGEST_ALG_UNKNOWN;
-			break;
-	}
+    default:
+      return LIBEC_DIGEST_ALG_UNKNOWN;
+      break;
+  }
 
-	// All Ok
-	return val;
+  // All Ok
+  return val;
 }
 
-size_t LIBEC_DIGEST_value(const unsigned char      ** data,
-                                const LIBEC_DIGEST  * dgst) {
+size_t LIBEC_DIGEST_value(const unsigned char ** data,
+                          const LIBEC_DIGEST   * dgst) {
 
-	// Input Check
-	if (!dgst) return 0;
+  // Input Check
+  if (!dgst) return 0;
 
-	// Sets the output pointer
-	if (data) *data = dgst->data + LIBEC_DIGEST_PREFIX_SIZE;
+  // Sets the output pointer
+  if (data) *data = dgst->data + LIBEC_DIGEST_PREFIX_SIZE;
 
-	// Returns the size
-	return (size_t) dgst->length - LIBEC_DIGEST_PREFIX_SIZE;
+  // Returns the size
+  return (size_t) dgst->length - LIBEC_DIGEST_PREFIX_SIZE;
 }
 
 // =====================
@@ -1730,556 +1730,556 @@ size_t LIBEC_DIGEST_value(const unsigned char      ** data,
 
 LIBEC_KEY * LIBEC_KEY_new() {
 
-	LIBEC_KEY * ret;
+  LIBEC_KEY * ret;
 
-	// Allocates memory
-	if ((ret = OPENSSL_malloc(sizeof(LIBEC_KEY))) == NULL) return NULL;
+  // Allocates memory
+  if ((ret = OPENSSL_malloc(sizeof(LIBEC_KEY))) == NULL) return NULL;
 
-	// Initialization (Asymmetric)
-	ret->pkey = NULL;
+  // Initialization (Asymmetric)
+  ret->pkey = NULL;
 
   // Initialization (Symmetric)
-	ret->skey.data_size = 0;
+  ret->skey.data_size = 0;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 }
 
 LIBEC_KEY * LIBEC_KEY_gen_ec(LIBEC_KEY      ** key,
-		                                 LIBEC_EC_CURVE    curve) {
+                             LIBEC_EC_CURVE    curve) {
 
-	LIBEC_KEY * ret = NULL;
-		// Return data structure
+  LIBEC_KEY * ret = NULL;
+    // Return data structure
 
-	// Checks allowed curves
-	switch(curve) {
+  // Checks allowed curves
+  switch(curve) {
 
-		// All Accepted Values
-		case LIBEC_EC_CURVE_ANY:
-		case LIBEC_EC_CURVE_GOOD:
-		case LIBEC_EC_CURVE_BETTER:
-		case LIBEC_EC_CURVE_BEST:
-			break;
+    // All Accepted Values
+    case LIBEC_EC_CURVE_ANY:
+    case LIBEC_EC_CURVE_GOOD:
+    case LIBEC_EC_CURVE_BETTER:
+    case LIBEC_EC_CURVE_BEST:
+      break;
 
-		// Anything else should fail
-		default:
-			return 0;
-			break;
-	}
+    // Anything else should fail
+    default:
+      return 0;
+      break;
+  }
 
-	// Setup the Container's pointers
-	if (key && *key) {
-		// Use the passed container
-		ret = *key;
-		// Cleanup the Key
-		LIBEC_KEY_cleanup(ret);
-	} else {
-		// Allocates the memory for the container
-		if ((ret = LIBEC_KEY_new()) == NULL) return NULL;
-	}
+  // Setup the Container's pointers
+  if (key && *key) {
+    // Use the passed container
+    ret = *key;
+    // Cleanup the Key
+    LIBEC_KEY_cleanup(ret);
+  } else {
+    // Allocates the memory for the container
+    if ((ret = LIBEC_KEY_new()) == NULL) return NULL;
+  }
 
-	// Sets the type
-	ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
+  // Sets the type
+  ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
 
-	// Generates the new key
-	if ((ret->pkey = _gen_ec(curve)) == NULL) {
-		if (!(key && *key)) LIBEC_KEY_free(ret);
-		return NULL;
-	}
+  // Generates the new key
+  if ((ret->pkey = _gen_ec(curve)) == NULL) {
+    if (!(key && *key)) LIBEC_KEY_free(ret);
+    return NULL;
+  }
 
-	// Sets the output parameter
-	if (key) *key = ret;
+  // Sets the output parameter
+  if (key) *key = ret;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 }
 
 LIBEC_KEY * LIBEC_KEY_gen_rsa(LIBEC_KEY      ** key,
-                                          LIBEC_RSA_SIZE    bits) {
+                              LIBEC_RSA_SIZE    bits) {
 
-	LIBEC_KEY * ret = NULL;
-		// Return data structure
+  LIBEC_KEY * ret = NULL;
+    // Return data structure
 
-	// Checks allowed strengths
-	switch(bits) {
+  // Checks allowed strengths
+  switch(bits) {
 
-		// All Accepted value
-		case LIBEC_RSA_SIZE_ANY:
-		case LIBEC_RSA_SIZE_GOOD:
-		case LIBEC_RSA_SIZE_BETTER:
-		case LIBEC_RSA_SIZE_BEST:
-			break;
+    // All Accepted value
+    case LIBEC_RSA_SIZE_ANY:
+    case LIBEC_RSA_SIZE_GOOD:
+    case LIBEC_RSA_SIZE_BETTER:
+    case LIBEC_RSA_SIZE_BEST:
+      break;
 
-		// Everything else should fail
-		default:
-			return NULL;
-			break;
-	}
+    // Everything else should fail
+    default:
+      return NULL;
+      break;
+  }
 
-	// Setup the Container's pointers
-	if (key && *key) {
-		// Use the passed container
-		ret = *key;
-		// Cleanup the Key
-		LIBEC_KEY_cleanup(ret);
-	} else {
-		// Allocates the memory for the container
-		if ((ret = LIBEC_KEY_new()) == NULL) return NULL;
-	}
+  // Setup the Container's pointers
+  if (key && *key) {
+    // Use the passed container
+    ret = *key;
+    // Cleanup the Key
+    LIBEC_KEY_cleanup(ret);
+  } else {
+    // Allocates the memory for the container
+    if ((ret = LIBEC_KEY_new()) == NULL) return NULL;
+  }
 
-	// Sets the type
-	ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
+  // Sets the type
+  ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
 
-	// Generates the new key
-	if ((ret->pkey = _gen_rsa(bits)) == NULL) {
-		if (!(key && *key)) LIBEC_KEY_free(ret);
-		return NULL;
-	}
+  // Generates the new key
+  if ((ret->pkey = _gen_rsa(bits)) == NULL) {
+    if (!(key && *key)) LIBEC_KEY_free(ret);
+    return NULL;
+  }
 
-	// Sets the output parameter
-	if (key) *key = ret;
+  // Sets the output parameter
+  if (key) *key = ret;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 }
 
 LIBEC_KEY * LIBEC_KEY_gen_aes(LIBEC_KEY      ** key,
-                                          LIBEC_AES_SIZE    bits) {
+                              LIBEC_AES_SIZE    bits) {
 
-	LIBEC_KEY * ret = NULL;
-		// Return data structure
+  LIBEC_KEY * ret = NULL;
+    // Return data structure
 
-	if (bits == LIBEC_AES_SIZE_ANY) bits = LIBEC_AES_SIZE_GOOD;
-	else if ((int)bits > EVP_MAX_KEY_LENGTH * 8) bits = EVP_MAX_KEY_LENGTH;
+  if (bits == LIBEC_AES_SIZE_ANY) bits = LIBEC_AES_SIZE_GOOD;
+  else if ((int)bits > EVP_MAX_KEY_LENGTH * 8) bits = EVP_MAX_KEY_LENGTH;
 
-	// Checks allowed strengths
-	switch(bits) {
-		case LIBEC_AES_SIZE_GOOD:
-		case LIBEC_AES_SIZE_BETTER:
-		case LIBEC_AES_SIZE_BEST:
-			break;
+  // Checks allowed strengths
+  switch(bits) {
+    case LIBEC_AES_SIZE_GOOD:
+    case LIBEC_AES_SIZE_BETTER:
+    case LIBEC_AES_SIZE_BEST:
+      break;
 
-		default:
-			return 0;
-			break;
-	}
+    default:
+      return 0;
+      break;
+  }
 
   // Transforms it in bytes
   bits /= 8;
 
-	// Setup the Container's pointers
-	if (key && *key) {
-		// Use the passed container
-		ret = *key;
-		// Cleanup the key internals
-		LIBEC_KEY_cleanup(ret);
-	} else {
-		// Allocates the memory for the container
-		if ((ret = LIBEC_KEY_new()) == NULL) return NULL;
-	}
+  // Setup the Container's pointers
+  if (key && *key) {
+    // Use the passed container
+    ret = *key;
+    // Cleanup the key internals
+    LIBEC_KEY_cleanup(ret);
+  } else {
+    // Allocates the memory for the container
+    if ((ret = LIBEC_KEY_new()) == NULL) return NULL;
+  }
 
-	// Checks it is a good size
-	if (bits > sizeof(ret->skey.data)) goto err;
+  // Checks it is a good size
+  if (bits > sizeof(ret->skey.data)) goto err;
 
-	// Sets the type
-	ret->type = LIBEC_KEY_TYPE_SYMMETRIC;
+  // Sets the type
+  ret->type = LIBEC_KEY_TYPE_SYMMETRIC;
 
-	// Generates the random bits
-	if (!RAND_bytes(ret->skey.data, bits)) goto err;
+  // Generates the random bits
+  if (!RAND_bytes(ret->skey.data, bits)) goto err;
 
-	// Fixes the key data size
-	ret->skey.data_size = bits;
+  // Fixes the key data size
+  ret->skey.data_size = bits;
 
-	// Sets the output parameter
-	if (key) *key = ret;
+  // Sets the output parameter
+  if (key) *key = ret;
 
-	// All Done
-	return ret;
-
-err:
-
-	// Resets the output parameters
-	if (!(key && *key)) {
-		// Free used memory
-		if (ret) LIBEC_KEY_free(ret);
-		*key = NULL;
-	}
-
-	// Returns the error
-	return NULL;
-}
-
-int LIBEC_KEY_encode_public(unsigned char        ** data,
-                                  size_t                * data_size,
-                                  const LIBEC_KEY * key) {
-
-	// Input Check
-	if (!data || !data_size || !key || !key->pkey) return 0;
-
-	// Let's just invoke the right call
-	return _pubkey_encode(key->pkey, data, data_size);
-}
-
-int LIBEC_KEY_encode_private(unsigned char        ** data,
-                                   size_t                * data_size,
-                                   const LIBEC_KEY * key) {
-
-	// Input Check
-	if (!data || !data_size || !key) return 0;
-
-	// Separate the behavior for symmetric and asymmetric keys
-	switch (key->type) {
-	case LIBEC_KEY_TYPE_ASYMMETRIC: {
-			return _privkey_encode(key->pkey, data, data_size);
-		} break;
-
-	case LIBEC_KEY_TYPE_SYMMETRIC: {
-			return _privkey_encode_sym(data, data_size, key->skey.data, key->skey.data_size);
-		} break;
-
-	default:
-		// ERROR
-		return 0;
-	}
-
-	return 1;
-}
-
-LIBEC_KEY * LIBEC_KEY_decode_public(LIBEC_KEY     ** key,
-                                                const unsigned char  * data,
-                                                size_t                 data_size) {
-
-	LIBEC_KEY * ret = NULL;
-	EVP_PKEY * pkey = NULL;
-
-	// Input Check
-	if (!data || !data_size) return NULL;
-
-	// Setup the Container's pointers
-	if (key && *key) {
-		// Use the passed container
-		ret = *key;
-		// Cleanup the key internals
-		LIBEC_KEY_cleanup(ret);
-	} else {
-		// Allocates the memory for the container
-		if ((ret = LIBEC_KEY_new()) == NULL) {
-			// Here we had an error
-			goto err;
-		}
-	}
-
-	// Now we can build the right object and return it
-	ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
-
-	// Parses the encoded public key
-	if ((pkey = _pubkey_decode(&ret->pkey, data, data_size)) == NULL) goto err;
-
-	// Assigns the value to the output parameter
-	if (key) *key = ret;
-
-	// Success
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	// Free Memory
-	if (pkey) EVP_PKEY_free(pkey);
+  // Resets the output parameters
+  if (!(key && *key)) {
+    // Free used memory
+    if (ret) LIBEC_KEY_free(ret);
+    *key = NULL;
+  }
 
-	// Fix output parameters
-	if (!(key && *key)) {
-		if (ret) LIBEC_KEY_free(ret);
-		*key = NULL;
-	}
-
-	// Report the error
-	return NULL;
+  // Returns the error
+  return NULL;
 }
 
-LIBEC_KEY * LIBEC_KEY_decode_private(LIBEC_KEY      ** key,
-                                                 LIBEC_KEY_TYPE    type,
-                                                 const unsigned char   * data,
-                                                 size_t                  data_size) {
+int LIBEC_KEY_encode_public(unsigned char   ** data,
+                            size_t           * data_size,
+                            const LIBEC_KEY  * key) {
 
-	LIBEC_KEY * ret = NULL;
-	EVP_PKEY * pkey = NULL;
+  // Input Check
+  if (!data || !data_size || !key || !key->pkey) return 0;
 
-	// Input Check
-	if (!data || !data_size) return NULL;
+  // Let's just invoke the right call
+  return _pubkey_encode(key->pkey, data, data_size);
+}
 
-	// Setup the Container's pointers
-	if (key && *key) {
-		// Use the passed container
-		ret = *key;
-		// Cleanup the key internals
-		LIBEC_KEY_cleanup(ret);
-	} else {
-		// Allocates the memory for the container
-		if ((ret = LIBEC_KEY_new()) == NULL) {
-			// Here we had an error
-			return NULL;
-		}
-	}
+int LIBEC_KEY_encode_private(unsigned char         ** data,
+                                   size_t           * data_size,
+                                   const LIBEC_KEY  * key) {
 
-	switch (type) {
+  // Input Check
+  if (!data || !data_size || !key) return 0;
 
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
+  // Separate the behavior for symmetric and asymmetric keys
+  switch (key->type) {
+  case LIBEC_KEY_TYPE_ASYMMETRIC: {
+      return _privkey_encode(key->pkey, data, data_size);
+    } break;
 
-			// Sets the Key Type
-			ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
+  case LIBEC_KEY_TYPE_SYMMETRIC: {
+      return _privkey_encode_sym(data, data_size, key->skey.data, key->skey.data_size);
+    } break;
 
-			// Parses the asymmetric key
-			if ((pkey = _privkey_decode(data, data_size)) == NULL) goto err;
-			ret->pkey = pkey;
+  default:
+    // ERROR
+    return 0;
+  }
 
-		} break;
+  return 1;
+}
 
-		case LIBEC_KEY_TYPE_SYMMETRIC : {
+LIBEC_KEY * LIBEC_KEY_decode_public(LIBEC_KEY           ** key,
+                                    const unsigned char  * data,
+                                    size_t                 data_size) {
 
-			// Sets the Key Type
-			ret->type = LIBEC_KEY_TYPE_SYMMETRIC;
+  LIBEC_KEY * ret = NULL;
+  EVP_PKEY * pkey = NULL;
 
-			// Parses the symmetric key
-			if (1 != _privkey_decode_sym(ret->skey.data, &ret->skey.data_size, data, data_size)) goto err;
+  // Input Check
+  if (!data || !data_size) return NULL;
 
-		} break;
+  // Setup the Container's pointers
+  if (key && *key) {
+    // Use the passed container
+    ret = *key;
+    // Cleanup the key internals
+    LIBEC_KEY_cleanup(ret);
+  } else {
+    // Allocates the memory for the container
+    if ((ret = LIBEC_KEY_new()) == NULL) {
+      // Here we had an error
+      goto err;
+    }
+  }
 
-		default:
-			// Nothing to do
-			break;
-	}
+  // Now we can build the right object and return it
+  ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
 
-	// Assigns the value to the output parameter
-	if (key) *key = ret;
+  // Parses the encoded public key
+  if ((pkey = _pubkey_decode(&ret->pkey, data, data_size)) == NULL) goto err;
 
-	// Returns a valid structure if the type was recognized,
-	// otherwise it returns the NULL value (var initialization)
-	return ret;
+  // Assigns the value to the output parameter
+  if (key) *key = ret;
+
+  // Success
+  return ret;
 
 err:
 
-	// Free used Memory
-	if (pkey) EVP_PKEY_free(pkey);
+  // Free Memory
+  if (pkey) EVP_PKEY_free(pkey);
 
-	if (!(key && *key)) {
-		// Free used Memory
-		if (ret) LIBEC_KEY_free(ret);
-		// Resets the output parameters
-		if (key) *key = NULL;
-	}
+  // Fix output parameters
+  if (!(key && *key)) {
+    if (ret) LIBEC_KEY_free(ret);
+    *key = NULL;
+  }
 
-	// Returns the error condition
-	return NULL;
+  // Report the error
+  return NULL;
 }
 
-LIBEC_DIGEST * LIBEC_KEY_identifier(LIBEC_DIGEST    ** dgst,
-                                                const LIBEC_KEY  * key,
-                                                LIBEC_DIGEST_ALG   dgst_alg) {
+LIBEC_KEY * LIBEC_KEY_decode_private(LIBEC_KEY           ** key,
+                                     LIBEC_KEY_TYPE         type,
+                                     const unsigned char  * data,
+                                     size_t                 data_size) {
+
+  LIBEC_KEY * ret = NULL;
+  EVP_PKEY * pkey = NULL;
+
+  // Input Check
+  if (!data || !data_size) return NULL;
+
+  // Setup the Container's pointers
+  if (key && *key) {
+    // Use the passed container
+    ret = *key;
+    // Cleanup the key internals
+    LIBEC_KEY_cleanup(ret);
+  } else {
+    // Allocates the memory for the container
+    if ((ret = LIBEC_KEY_new()) == NULL) {
+      // Here we had an error
+      return NULL;
+    }
+  }
+
+  switch (type) {
+
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
+
+      // Sets the Key Type
+      ret->type = LIBEC_KEY_TYPE_ASYMMETRIC;
+
+      // Parses the asymmetric key
+      if ((pkey = _privkey_decode(data, data_size)) == NULL) goto err;
+      ret->pkey = pkey;
+
+    } break;
+
+    case LIBEC_KEY_TYPE_SYMMETRIC : {
+
+      // Sets the Key Type
+      ret->type = LIBEC_KEY_TYPE_SYMMETRIC;
+
+      // Parses the symmetric key
+      if (1 != _privkey_decode_sym(ret->skey.data, &ret->skey.data_size, data, data_size)) goto err;
+
+    } break;
+
+    default:
+      // Nothing to do
+      break;
+  }
+
+  // Assigns the value to the output parameter
+  if (key) *key = ret;
+
+  // Returns a valid structure if the type was recognized,
+  // otherwise it returns the NULL value (var initialization)
+  return ret;
+
+err:
+
+  // Free used Memory
+  if (pkey) EVP_PKEY_free(pkey);
+
+  if (!(key && *key)) {
+    // Free used Memory
+    if (ret) LIBEC_KEY_free(ret);
+    // Resets the output parameters
+    if (key) *key = NULL;
+  }
+
+  // Returns the error condition
+  return NULL;
+}
+
+LIBEC_DIGEST * LIBEC_KEY_identifier(LIBEC_DIGEST     ** dgst,
+                                    const LIBEC_KEY   * key,
+                                    LIBEC_DIGEST_ALG    dgst_alg) {
 
   LIBEC_DIGEST * ret = NULL;
-		// Return container
+    // Return container
 
-	unsigned char *buf = NULL;
-	size_t buf_size = 0;
-		// Temporary container for the DER encoded public key
-		// for the asymmetric case
+  unsigned char *buf = NULL;
+  size_t buf_size = 0;
+    // Temporary container for the DER encoded public key
+    // for the asymmetric case
 
-	// Input Check
-	if (!key) return NULL;
+  // Input Check
+  if (!key) return NULL;
 
   // Gets the Key Material
-	switch (key->type) {
+  switch (key->type) {
 
-		// Symmetric Key
-		case LIBEC_KEY_TYPE_SYMMETRIC: {
+    // Symmetric Key
+    case LIBEC_KEY_TYPE_SYMMETRIC: {
 
-			// Calculates the Digest over the symmetric key material
-			if ((ret = LIBEC_DIGEST_new(dgst,
-			                                  dgst_alg,
-			                                  key->skey.data,
-			                                  key->skey.data_size)) == NULL) goto err;
-		} break;
+      // Calculates the Digest over the symmetric key material
+      if ((ret = LIBEC_DIGEST_new(dgst,
+                                        dgst_alg,
+                                        key->skey.data,
+                                        key->skey.data_size)) == NULL) goto err;
+    } break;
 
-		// Asymmetric Key
-		case LIBEC_KEY_TYPE_ASYMMETRIC : {
+    // Asymmetric Key
+    case LIBEC_KEY_TYPE_ASYMMETRIC : {
 
-			// Needs the Encoded version of the key first
-			if (1 != LIBEC_KEY_encode_public(&buf, &buf_size, key)) goto err;
+      // Needs the Encoded version of the key first
+      if (1 != LIBEC_KEY_encode_public(&buf, &buf_size, key)) goto err;
 
-			// Calculates the Digest over the symmetric key material
-			if ((ret = LIBEC_DIGEST_new(dgst,
-										                    dgst_alg,
-											                  buf,
-											                  buf_size)) == NULL) goto err;
+      // Calculates the Digest over the symmetric key material
+      if ((ret = LIBEC_DIGEST_new(dgst,
+                                        dgst_alg,
+                                        buf,
+                                        buf_size)) == NULL) goto err;
 
-			// Free the allocated memory
-			OPENSSL_free(buf);
-			buf = NULL; // Safety
-		} break;
+      // Free the allocated memory
+      OPENSSL_free(buf);
+      buf = NULL; // Safety
+    } break;
 
-		// Not Recognized Type
-		default: {
-			// Error
-			goto err;
-		} break;
-	}
+    // Not Recognized Type
+    default: {
+      // Error
+      goto err;
+    } break;
+  }
 
-	// Fix the output parameter
-	if (dgst) *dgst = ret;
+  // Fix the output parameter
+  if (dgst) *dgst = ret;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	// Free allocated memory
-	if (buf) OPENSSL_free(buf);
+  // Free allocated memory
+  if (buf) OPENSSL_free(buf);
 
-	// Fix output parameter
-	if (!(dgst && *dgst)) {
-		if (ret) LIBEC_DIGEST_free(ret);
-		*dgst = NULL;
-	}
+  // Fix output parameter
+  if (!(dgst && *dgst)) {
+    if (ret) LIBEC_DIGEST_free(ret);
+    *dgst = NULL;
+  }
 
-	// Returns the error
-	return NULL;
+  // Returns the error
+  return NULL;
 }
 
 void LIBEC_KEY_cleanup(LIBEC_KEY * key) {
 
-	// Input Check
-	if (!key) return;
+  // Input Check
+  if (!key) return;
 
-	// Cleanup the Asymmetric key
-	if (key->pkey) {
+  // Cleanup the Asymmetric key
+  if (key->pkey) {
 
-		// Cleanup the key data
-		EVP_PKEY_free(key->pkey);
+    // Cleanup the key data
+    EVP_PKEY_free(key->pkey);
 
-		// Resets the pointer
-		key->pkey = NULL;
-	}
+    // Resets the pointer
+    key->pkey = NULL;
+  }
 
-	// Cleanup the Symmetric Key
-	OPENSSL_cleanse(key->skey.data, key->skey.data_size);
+  // Cleanup the Symmetric Key
+  OPENSSL_cleanse(key->skey.data, key->skey.data_size);
 
-	// Resets the Size
-	key->skey.data_size = 0;
+  // Resets the Size
+  key->skey.data_size = 0;
 
-	// Cleanup type and context
-	key->type = LIBEC_KEY_TYPE_UNKNOWN;
+  // Cleanup type and context
+  key->type = LIBEC_KEY_TYPE_UNKNOWN;
 
-	// Success;
-	return;
+  // Success;
+  return;
 }
 
 void LIBEC_KEY_free(LIBEC_KEY * key) {
 
-	// Input Check
-	if (!key) return;
+  // Input Check
+  if (!key) return;
 
-	// Cleanup the Key structures
-	LIBEC_KEY_cleanup(key);
+  // Cleanup the Key structures
+  LIBEC_KEY_cleanup(key);
 
-	// Free the Memory
-	OPENSSL_cleanse(key, sizeof(LIBEC_KEY));
-	OPENSSL_free(key);
+  // Free the Memory
+  OPENSSL_cleanse(key, sizeof(LIBEC_KEY));
+  OPENSSL_free(key);
 
-	// All Done
-	return;
+  // All Done
+  return;
 }
 
 // =====================
 // Signatures Management
 // =====================
 
-int LIBEC_SIGNATURE_encode(unsigned char               ** data,
-                                 size_t                       * size,
-                                 const LIBEC_SIGNATURE  * sig) {
+int LIBEC_SIGNATURE_encode(unsigned char         ** data,
+                           size_t                 * size,
+                           const LIBEC_SIGNATURE  * sig) {
 
-	int i = 0;
-	unsigned char * tmp = 0;
+  int i = 0;
+  unsigned char * tmp = 0;
 
-	// Input Checks
-	if (!data || !size || !sig) return 0;
+  // Input Checks
+  if (!data || !size || !sig) return 0;
 
-	// Gets the encoded size
-	if ((i = i2d_LIBEC_SIGNATURE((LIBEC_SIGNATURE  *)sig, NULL)) < 1) return 0;
+  // Gets the encoded size
+  if ((i = i2d_LIBEC_SIGNATURE((LIBEC_SIGNATURE  *)sig, NULL)) < 1) return 0;
 
-	// Allocates the right space
-	if ((*data = OPENSSL_malloc(i)) == NULL) return 0;
+  // Allocates the right space
+  if ((*data = OPENSSL_malloc(i)) == NULL) return 0;
 
-	// Encodes the value
-	tmp = *data;
-	if ((i = i2d_LIBEC_SIGNATURE((LIBEC_SIGNATURE  *)sig, &tmp)) <= 0) {
-		OPENSSL_free(*data);
-		return 0;
-	}
+  // Encodes the value
+  tmp = *data;
+  if ((i = i2d_LIBEC_SIGNATURE((LIBEC_SIGNATURE  *)sig, &tmp)) <= 0) {
+    OPENSSL_free(*data);
+    return 0;
+  }
 
-	// Sets the output value for the size
-	*size = i;
+  // Sets the output value for the size
+  *size = i;
 
-	// Returns success
-	return 1;
+  // Returns success
+  return 1;
 
 }
 
-LIBEC_SIGNATURE * LIBEC_SIGNATURE_decode(LIBEC_SIGNATURE ** sig,
-                                                     const unsigned char   ** next,
-                                                     const unsigned char    * data,
-                                                     size_t                   size) {
+LIBEC_SIGNATURE * LIBEC_SIGNATURE_decode(LIBEC_SIGNATURE     ** sig,
+                                         const unsigned char ** next,
+                                         const unsigned char  * data,
+                                         size_t                 size) {
 
-	LIBEC_SIGNATURE * ret = NULL;
-	const unsigned char *p = data;
+  LIBEC_SIGNATURE * ret = NULL;
+  const unsigned char *p = data;
 
-	// Input Check
-	if (!data && !size) return NULL;
+  // Input Check
+  if (!data && !size) return NULL;
 
-	// Decode the Structure
-	if ((ret = d2i_LIBEC_SIGNATURE(sig, &p, size)) == NULL) return NULL;
+  // Decode the Structure
+  if ((ret = d2i_LIBEC_SIGNATURE(sig, &p, size)) == NULL) return NULL;
 
-	// Adjust the output parameters
-	if (next) *next = p;
+  // Adjust the output parameters
+  if (next) *next = p;
 
-	// Success
-	return ret;
+  // Success
+  return ret;
 }
 
 int LIBEC_SIGNATURE_algor(LIBEC_ALGOR           * algor,
-								LIBEC_DIGEST_ALG      * dgst,
-								const LIBEC_SIGNATURE * sig) {
+                          LIBEC_DIGEST_ALG      * dgst,
+                          const LIBEC_SIGNATURE * sig) {
 
-	// Input Check
-	if (!sig || !sig->value || !sig->value->data || sig->value->length < 1)
-		return 0;
+  // Input Check
+  if (!sig || !sig->value || !sig->value->data || sig->value->length < 1)
+    return 0;
 
-	// Let's save the output parameters
-	*algor = sig->value->data[0] & LIBEC_ALGOR_MASK;
-	*dgst  = sig->value->data[0] & LIBEC_DIGEST_ALG_MASK;
+  // Let's save the output parameters
+  *algor = sig->value->data[0] & LIBEC_ALGOR_MASK;
+  *dgst  = sig->value->data[0] & LIBEC_DIGEST_ALG_MASK;
 
-	// Success
-	return (uint8_t) sig->value->data[0];
+  // Success
+  return (uint8_t) sig->value->data[0];
 }
 
-size_t LIBEC_SIGNATURE_value(const unsigned char         ** data,
-                                   const LIBEC_SIGNATURE  * sig) {
+size_t LIBEC_SIGNATURE_value(const unsigned char   ** data,
+                             const LIBEC_SIGNATURE  * sig) {
 
-	// Input Check
-	if (!sig || !sig->value || !sig->value->data) return 0;
+  // Input Check
+  if (!sig || !sig->value || !sig->value->data) return 0;
 
-	// Sets the output pointer (after the prefix)
-	if (data) *data = sig->value->data + LIBEC_SIGNATURE_PREFIX_SIZE;
+  // Sets the output pointer (after the prefix)
+  if (data) *data = sig->value->data + LIBEC_SIGNATURE_PREFIX_SIZE;
 
-	// Returns the size (minus the prefix len)
-	return (size_t) sig->value->length - LIBEC_SIGNATURE_PREFIX_SIZE;
+  // Returns the size (minus the prefix len)
+  return (size_t) sig->value->length - LIBEC_SIGNATURE_PREFIX_SIZE;
 }
 
-size_t LIBEC_SIGNATURE_identifier(const unsigned char        ** data,
-                                        LIBEC_DIGEST_ALG      * dgst_alg,
-                                        const LIBEC_SIGNATURE * sig) {
+size_t LIBEC_SIGNATURE_identifier(const unsigned char   ** data,
+                                  LIBEC_DIGEST_ALG       * dgst_alg,
+                                  const LIBEC_SIGNATURE  * sig) {
 
-	// Input Check
-	if (!sig || !sig->keyIdentifier) return 0;
+  // Input Check
+  if (!sig || !sig->keyIdentifier) return 0;
 
   // Returns the values via the auxillary function
   return _get_identifier(data, dgst_alg, sig->keyIdentifier);
@@ -2289,305 +2289,305 @@ size_t LIBEC_SIGNATURE_identifier(const unsigned char        ** data,
 // Signatures (Asymmetric AND HMAC)
 // ================================
 
-LIBEC_CTX * LIBEC_sign_init(LIBEC_CTX        ** ctx,
-                                        const LIBEC_KEY   * key,
-                                        LIBEC_DIGEST_ALG    dgst_alg,
-                                        const unsigned char     * data,
-                                        size_t                    data_size) {
+LIBEC_CTX * LIBEC_sign_init(LIBEC_CTX           ** ctx,
+                            const LIBEC_KEY      * key,
+                            LIBEC_DIGEST_ALG       dgst_alg,
+                            const unsigned char  * data,
+                            size_t                 data_size) {
 
-	LIBEC_CTX * ret = NULL;
-	  // Return Structure
+  LIBEC_CTX * ret = NULL;
+    // Return Structure
 
-	const EVP_MD * md = NULL;
-	  // OpenSSL Message digest
+  const EVP_MD * md = NULL;
+    // OpenSSL Message digest
 
-	// Input Check
-	if (!key) return NULL;
+  // Input Check
+  if (!key) return NULL;
 
-	// Sets the default digest to use
-	if (!md) md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT);
+  // Sets the default digest to use
+  if (!md) md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT);
 
-	// Creates the context
-	if (ctx && *ctx) {
-		// Gets the Pointer to already initialized structure
-		// (can be useful to re-use without needed re-allocation
-		ret = *ctx;
-		// Cleanup the crypto context
-		LIBEC_CTX_cleanup(ret);
-	} else {
-		// Let's make sure we have a good memory allocation
-		if ((ret = LIBEC_CTX_new()) == NULL) {
-			// If we can not allocate a new CTX, let's return NULL
-			return NULL;
-		}
-	}
+  // Creates the context
+  if (ctx && *ctx) {
+    // Gets the Pointer to already initialized structure
+    // (can be useful to re-use without needed re-allocation
+    ret = *ctx;
+    // Cleanup the crypto context
+    LIBEC_CTX_cleanup(ret);
+  } else {
+    // Let's make sure we have a good memory allocation
+    if ((ret = LIBEC_CTX_new()) == NULL) {
+      // If we can not allocate a new CTX, let's return NULL
+      return NULL;
+    }
+  }
 
-	// Sets the default if none was specified
-	if (!dgst_alg) dgst_alg = LIBEC_DIGEST_ALG_DEFAULT;
+  // Sets the default if none was specified
+  if (!dgst_alg) dgst_alg = LIBEC_DIGEST_ALG_DEFAULT;
 
-	// Gets the EVP_MD for the corresponding digest algorithm
-	if ((md = _get_evp_md(dgst_alg)) == NULL) goto err;
+  // Gets the EVP_MD for the corresponding digest algorithm
+  if ((md = _get_evp_md(dgst_alg)) == NULL) goto err;
 
-	// Different operations for Symmetric vs. Asymmetric
-	switch (key->type) {
+  // Different operations for Symmetric vs. Asymmetric
+  switch (key->type) {
 
-		// ASYMMETRIC signature
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
+    // ASYMMETRIC signature
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
 
-			// Checks we have a pkey
-			if (!key->pkey) goto err;
+      // Checks we have a pkey
+      if (!key->pkey) goto err;
 
-			// Initializes / Resets the Context
-			EVP_MD_CTX_init(ret->md_ctx);
+      // Initializes / Resets the Context
+      EVP_MD_CTX_init(ret->md_ctx);
 
-			// Initializes the Signature's MD algorithm
-			EVP_SignInit_ex(ret->md_ctx, md, NULL);
+      // Initializes the Signature's MD algorithm
+      EVP_SignInit_ex(ret->md_ctx, md, NULL);
 
-			// Let's update the MD
-			if (data && data_size && EVP_SignUpdate(ret->md_ctx, data, (int)data_size) != 1) {
-				// Error, let's free and return Error
-				goto err;
-			}
-		} break;
+      // Let's update the MD
+      if (data && data_size && EVP_SignUpdate(ret->md_ctx, data, (int)data_size) != 1) {
+        // Error, let's free and return Error
+        goto err;
+      }
+    } break;
 
-		// SYMMETRIC signature (HMAC)
-		case LIBEC_KEY_TYPE_SYMMETRIC: {
+    // SYMMETRIC signature (HMAC)
+    case LIBEC_KEY_TYPE_SYMMETRIC: {
 
-			// Checks we have the symmetric key
-			if (!key->skey.data_size) goto err;
+      // Checks we have the symmetric key
+      if (!key->skey.data_size) goto err;
 
-		    // Initializes the HMAC_CTX structure
-		    HMAC_CTX_init(ret->hmac_ctx);
+        // Initializes the HMAC_CTX structure
+        HMAC_CTX_init(ret->hmac_ctx);
 
-		    // Initialize the Context
+        // Initialize the Context
 #if OPENSSL_VERSION_NUMBER < 0x0090899fL // OPENSSL VERSION < 0.9.9
-		    HMAC_Init_ex(ret->hmac_ctx, ret, key->skey.data, (int)key->skey.data_size, md, (ENGINE *)NULL);
+        HMAC_Init_ex(ret->hmac_ctx, ret, key->skey.data, (int)key->skey.data_size, md, (ENGINE *)NULL);
 #else
-		    if (!HMAC_Init_ex(ret->hmac_ctx, key->skey.data, (int)key->skey.data_size, md, (ENGINE *)NULL)) goto err;
+        if (!HMAC_Init_ex(ret->hmac_ctx, key->skey.data, (int)key->skey.data_size, md, (ENGINE *)NULL)) goto err;
 #endif
-		    // Updates the Context
-		    if (data && data_size && HMAC_Update(ret->hmac_ctx, data, data_size) != 1) {
-		    	// Error, let's free and return Error
-		    	goto err;
-		    }
+        // Updates the Context
+        if (data && data_size && HMAC_Update(ret->hmac_ctx, data, data_size) != 1) {
+          // Error, let's free and return Error
+          goto err;
+        }
 
-		} break;
+    } break;
 
-		default: {
-			// Unknown key type
-			goto err;
-		} break;
-	}
+    default: {
+      // Unknown key type
+      goto err;
+    } break;
+  }
 
-	// Memoizes the key
-	ret->key = key;
+  // Memoizes the key
+  ret->key = key;
 
-	// Assigns the structure to the output param
-	if (ctx) *ctx = ret;
+  // Assigns the structure to the output param
+  if (ctx) *ctx = ret;
 
-	// Returns the Generated context
-	return ret;
+  // Returns the Generated context
+  return ret;
 
 err:
 
-	// Memory Cleanup and Output Params Fixes
-	if (!(ctx && *ctx)) {
+  // Memory Cleanup and Output Params Fixes
+  if (!(ctx && *ctx)) {
     // Cleanup Memory
-		if (ret) LIBEC_CTX_free(ret);
+    if (ret) LIBEC_CTX_free(ret);
     // Fixes the out parameter
-		*ctx = NULL;
-	}
+    *ctx = NULL;
+  }
 
-	// Returns the Error
-	return NULL;
+  // Returns the Error
+  return NULL;
 }
 
-int LIBEC_sign_update(LIBEC_CTX     * ctx,
-                            const unsigned char * data,
-                            size_t                data_size) {
+int LIBEC_sign_update(LIBEC_CTX           * ctx,
+                      const unsigned char * data,
+                      size_t                data_size) {
 
-	// Input Check
-	if (!ctx || !ctx->key || !data || !data_size || data_size >= INT_MAX) return 0;
+  // Input Check
+  if (!ctx || !ctx->key || !data || !data_size || data_size >= INT_MAX) return 0;
 
-	// Updates the Digest
-	switch (ctx->key->type) {
+  // Updates the Digest
+  switch (ctx->key->type) {
 
-		// ASYMMETRIC signature
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
-			// Returns the EVP update return code (0 is returned in case of error)
-			return EVP_SignUpdate(ctx->md_ctx, data, (int)data_size);
-		} break;
+    // ASYMMETRIC signature
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
+      // Returns the EVP update return code (0 is returned in case of error)
+      return EVP_SignUpdate(ctx->md_ctx, data, (int)data_size);
+    } break;
 
-		// SYMMETRIC signature
-		case LIBEC_KEY_TYPE_SYMMETRIC: {
-			// Returns the HMAC update return code (0 is returned in case of error)
-			return HMAC_Update(ctx->hmac_ctx, data, data_size);
-		} break;
+    // SYMMETRIC signature
+    case LIBEC_KEY_TYPE_SYMMETRIC: {
+      // Returns the HMAC update return code (0 is returned in case of error)
+      return HMAC_Update(ctx->hmac_ctx, data, data_size);
+    } break;
 
-		// UNRECOGNIZED signature
-		default: {
-			// Unknown Key Type
-			return 0;
-		}
-	}
+    // UNRECOGNIZED signature
+    default: {
+      // Unknown Key Type
+      return 0;
+    }
+  }
 
-	// Error
-	return 0;
+  // Error
+  return 0;
 }
 
 LIBEC_SIGNATURE * LIBEC_sign_final(LIBEC_SIGNATURE ** sig,
-                                               LIBEC_CTX        * ctx) {
+                                   LIBEC_CTX        * ctx) {
 
-	LIBEC_SIGNATURE * ret = NULL;
-		// Return Data Structure
+  LIBEC_SIGNATURE * ret = NULL;
+    // Return Data Structure
 
-	// LIBEC_DIGEST * key_id = NULL;
-		// Key Identifier structure
+  // LIBEC_DIGEST * key_id = NULL;
+    // Key Identifier structure
 
-	// unsigned char * tmp = NULL;
-	unsigned char * buf = NULL;
-	int buf_len = 0;
-		// Signature Length
+  // unsigned char * tmp = NULL;
+  unsigned char * buf = NULL;
+  int buf_len = 0;
+    // Signature Length
 
-	// Input Check
-	if (!ctx || !ctx->key) return NULL;
+  // Input Check
+  if (!ctx || !ctx->key) return NULL;
 
-	// Creates the context
-	if (sig && *sig) {
-		// Gets the Pointer to already initialized structure
-		// (can be useful to re-use without needed re-allocation
-		ret = *sig;
-	} else {
-		// Let's make sure we have a good memory allocation
-		if ((ret = LIBEC_SIGNATURE_new()) == NULL) {
-			// If we can not allocate a new CTX, let's return NULL
-			return NULL;
-		}
-	}
+  // Creates the context
+  if (sig && *sig) {
+    // Gets the Pointer to already initialized structure
+    // (can be useful to re-use without needed re-allocation
+    ret = *sig;
+  } else {
+    // Let's make sure we have a good memory allocation
+    if ((ret = LIBEC_SIGNATURE_new()) == NULL) {
+      // If we can not allocate a new CTX, let's return NULL
+      return NULL;
+    }
+  }
 
-	// Different Operations for Symmetric and Asymmetric Key Types
-	switch (ctx->key->type) {
+  // Different Operations for Symmetric and Asymmetric Key Types
+  switch (ctx->key->type) {
 
-		// ASYMMETRIC signature
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
+    // ASYMMETRIC signature
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
 
-		  // We need a good key
-		  if (!ctx->key->pkey) goto err;
+      // We need a good key
+      if (!ctx->key->pkey) goto err;
 
-			// Gets the size of the signature
-			if ((buf_len = EVP_PKEY_size(ctx->key->pkey)) <= 0) goto err;
+      // Gets the size of the signature
+      if ((buf_len = EVP_PKEY_size(ctx->key->pkey)) <= 0) goto err;
 
-			// Allocates the max number of bytes
-			if ((buf = OPENSSL_malloc(buf_len +
-									  LIBEC_SIGNATURE_PREFIX_SIZE)) == NULL) goto err;
+      // Allocates the max number of bytes
+      if ((buf = OPENSSL_malloc(buf_len +
+                    LIBEC_SIGNATURE_PREFIX_SIZE)) == NULL) goto err;
 
-			// Finalizes the Signature
-			if (1 != EVP_SignFinal(ctx->md_ctx,
-								   buf + LIBEC_DIGEST_PREFIX_SIZE,
-								   (unsigned int *)&buf_len, ctx->key->pkey)) goto err;
+      // Finalizes the Signature
+      if (1 != EVP_SignFinal(ctx->md_ctx,
+                   buf + LIBEC_DIGEST_PREFIX_SIZE,
+                   (unsigned int *)&buf_len, ctx->key->pkey)) goto err;
 
-			// Sets the Algorithm's Schema in the buffer's first byte (4 msb)
-			switch (ctx->key->pkey->type) {
+      // Sets the Algorithm's Schema in the buffer's first byte (4 msb)
+      switch (ctx->key->pkey->type) {
 
-				// RSA
-				case EVP_PKEY_RSA: {
-						buf[0] = LIBEC_ALGOR_RSA;
-					} break;
+        // RSA
+        case EVP_PKEY_RSA: {
+            buf[0] = LIBEC_ALGOR_RSA;
+          } break;
 
-				// ECDSA
-				case EVP_PKEY_EC: {
-						buf[0] = LIBEC_ALGOR_ECDSA;
-					} break;
+        // ECDSA
+        case EVP_PKEY_EC: {
+            buf[0] = LIBEC_ALGOR_ECDSA;
+          } break;
 
-				// NOT Supported Algorithm
-				default: {
-						goto err;
-					} break;
-			}
+        // NOT Supported Algorithm
+        default: {
+            goto err;
+          } break;
+      }
 
-			// Sets the hashing algorithm used in the buffer's first byte (4 lsb)
-			switch (EVP_MD_CTX_type(ctx->md_ctx)) {
+      // Sets the hashing algorithm used in the buffer's first byte (4 lsb)
+      switch (EVP_MD_CTX_type(ctx->md_ctx)) {
 
-				// SHA-256
-				case NID_sha256: {
-						buf[0] |= LIBEC_DIGEST_ALG_SHA256;
-					} break;
+        // SHA-256
+        case NID_sha256: {
+            buf[0] |= LIBEC_DIGEST_ALG_SHA256;
+          } break;
 
-				// SHA-384
-				case NID_sha384: {
-						buf[0] |= LIBEC_DIGEST_ALG_SHA384;
-					} break;
+        // SHA-384
+        case NID_sha384: {
+            buf[0] |= LIBEC_DIGEST_ALG_SHA384;
+          } break;
 
-				// SHA-512
-				case NID_sha512: {
-						buf[0] |= LIBEC_DIGEST_ALG_SHA512;
-					} break;
+        // SHA-512
+        case NID_sha512: {
+            buf[0] |= LIBEC_DIGEST_ALG_SHA512;
+          } break;
 
-				// NOT Supported Digest
-				default: {
-						goto err;
-					} break;
-			}
-		} break;
+        // NOT Supported Digest
+        default: {
+            goto err;
+          } break;
+      }
+    } break;
 
-		// SYMMETRIC signature
-		case LIBEC_KEY_TYPE_SYMMETRIC : {
+    // SYMMETRIC signature
+    case LIBEC_KEY_TYPE_SYMMETRIC : {
 
-			// Gets the required buffer memory
-			if ((buf_len = HMAC_size(ctx->hmac_ctx)) <= 0) goto err;
+      // Gets the required buffer memory
+      if ((buf_len = HMAC_size(ctx->hmac_ctx)) <= 0) goto err;
 
-			// Symmetric Key Signature operations (HMAC)
-			// Allocates the required memory
-			if ((buf = OPENSSL_malloc(buf_len +
-									  LIBEC_SIGNATURE_PREFIX_SIZE)) == NULL) goto err;
+      // Symmetric Key Signature operations (HMAC)
+      // Allocates the required memory
+      if ((buf = OPENSSL_malloc(buf_len +
+                    LIBEC_SIGNATURE_PREFIX_SIZE)) == NULL) goto err;
 
 #if OPENSSL_VERSION_NUMBER < 0x0090900fL // OPENSSL VERSION < 0.9.9
-		    HMAC_Final(ctx->hmac_ctx, buf, &len);
+        HMAC_Final(ctx->hmac_ctx, buf, &len);
 #else
-		    // Now let's calculate the HMAC
-		    if (1 != HMAC_Final(ctx->hmac_ctx, buf +
-		    					LIBEC_SIGNATURE_PREFIX_SIZE,
-								(unsigned int *)&buf_len)) goto err;
+        // Now let's calculate the HMAC
+        if (1 != HMAC_Final(ctx->hmac_ctx, buf +
+                  LIBEC_SIGNATURE_PREFIX_SIZE,
+                (unsigned int *)&buf_len)) goto err;
 #endif
 
-		    // Sets the Algorithm's Schema in the buffer's first byte (4 msb)
-		    buf[0] = LIBEC_ALGOR_HMAC;
+        // Sets the Algorithm's Schema in the buffer's first byte (4 msb)
+        buf[0] = LIBEC_ALGOR_HMAC;
 
-		    // Sets the first byte to carry the algorithm
-		    switch (EVP_MD_type(ctx->hmac_ctx->md)) {
+        // Sets the first byte to carry the algorithm
+        switch (EVP_MD_type(ctx->hmac_ctx->md)) {
 
-		    	// SHA-256
-				case NID_sha256: {
-						buf[0] |= LIBEC_DIGEST_ALG_SHA256;
-					} break;
+          // SHA-256
+        case NID_sha256: {
+            buf[0] |= LIBEC_DIGEST_ALG_SHA256;
+          } break;
 
-				// SHA-384
-				case NID_sha384: {
-						buf[0] |= LIBEC_DIGEST_ALG_SHA384;
-					} break;
+        // SHA-384
+        case NID_sha384: {
+            buf[0] |= LIBEC_DIGEST_ALG_SHA384;
+          } break;
 
-				// SHA-512
-				case NID_sha512: {
-						buf[0] |= LIBEC_DIGEST_ALG_SHA512;
-					} break;
+        // SHA-512
+        case NID_sha512: {
+            buf[0] |= LIBEC_DIGEST_ALG_SHA512;
+          } break;
 
-				// NOT Supported Case
-				default: {
-						goto err;
-					} break;
-			}
+        // NOT Supported Case
+        default: {
+            goto err;
+          } break;
+      }
 
-		} break;
+    } break;
 
-		// UNKNOWN signature
-		default : {
-			// Non-Supported Key Type
-			goto err;
-		}
-	}
+    // UNKNOWN signature
+    default : {
+      // Non-Supported Key Type
+      goto err;
+    }
+  }
 
-	// Gets the identifier
-	if (NULL == LIBEC_KEY_identifier(&(ret->keyIdentifier),
+  // Gets the identifier
+  if (NULL == LIBEC_KEY_identifier(&(ret->keyIdentifier),
                                           ctx->key,
                                           buf[0] & LIBEC_DIGEST_ALG_MASK)) goto err;
 
@@ -2603,57 +2603,57 @@ LIBEC_SIGNATURE * LIBEC_sign_final(LIBEC_SIGNATURE ** sig,
   ret->value->data = buf;
   buf = NULL; // Safety
 
-	// Assigns the structure to the output param
-	if (sig) *sig = ret;
+  // Assigns the structure to the output param
+  if (sig) *sig = ret;
 
-	// Success
-	return ret;
+  // Success
+  return ret;
 
 err:
 
-	// Memory Cleanup
-	LIBEC_CTX_cleanup(ctx);
+  // Memory Cleanup
+  LIBEC_CTX_cleanup(ctx);
 
-	// Buffer Cleanup
-	if (buf) OPENSSL_free(buf);
+  // Buffer Cleanup
+  if (buf) OPENSSL_free(buf);
 
-	// Output Parameters Fix
-	if (!(sig && *sig)) {
-		if (ret) LIBEC_SIGNATURE_free(ret);
-		*sig = NULL;
-	}
+  // Output Parameters Fix
+  if (!(sig && *sig)) {
+    if (ret) LIBEC_SIGNATURE_free(ret);
+    *sig = NULL;
+  }
 
-	// Return the Error
-	return NULL;
+  // Return the Error
+  return NULL;
 }
 
 
-LIBEC_SIGNATURE * LIBEC_sign(LIBEC_CTX        ** ctx,
-                                         LIBEC_SIGNATURE  ** sig,
-                                         const LIBEC_KEY   * key,
-                                         LIBEC_DIGEST_ALG    dgst_alg,
-                                         const unsigned char     * data,
-                                         size_t                    data_size) {
+LIBEC_SIGNATURE * LIBEC_sign(LIBEC_CTX           ** ctx,
+                             LIBEC_SIGNATURE     ** sig,
+                             const LIBEC_KEY      * key,
+                             LIBEC_DIGEST_ALG       dgst_alg,
+                             const unsigned char  * data,
+                             size_t                 data_size) {
 
-	LIBEC_SIGNATURE * ret = NULL;
-		// Return Structure
+  LIBEC_SIGNATURE * ret = NULL;
+    // Return Structure
 
-	LIBEC_CTX * inner_ctx = NULL;
-		// Local Context Pointer
+  LIBEC_CTX * inner_ctx = NULL;
+    // Local Context Pointer
 
-	// Input Check
-	if (!ctx || !key) return NULL;
+  // Input Check
+  if (!ctx || !key) return NULL;
 
-	// Checks the ctx parameter
-	if (ctx && *ctx) {
-		/// Gets the context from the parameter
-		inner_ctx = *ctx;
-		// Cleanup the context
-		LIBEC_CTX_cleanup(inner_ctx);
-	} else {
-		// Let's make sure we have a good inner_ctx
-		if ((inner_ctx = LIBEC_CTX_new()) == NULL) goto err;
-	}
+  // Checks the ctx parameter
+  if (ctx && *ctx) {
+    /// Gets the context from the parameter
+    inner_ctx = *ctx;
+    // Cleanup the context
+    LIBEC_CTX_cleanup(inner_ctx);
+  } else {
+    // Let's make sure we have a good inner_ctx
+    if ((inner_ctx = LIBEC_CTX_new()) == NULL) goto err;
+  }
 
   // Initialize the Signature
   if (NULL == LIBEC_sign_init(&inner_ctx, key, dgst_alg, data, data_size))
@@ -2669,27 +2669,27 @@ LIBEC_SIGNATURE * LIBEC_sign(LIBEC_CTX        ** ctx,
   else if (ctx) *ctx = inner_ctx;
 
   // Returns the result
-	return ret;
+  return ret;
 
 err:
 
-	// Frees memory only if it did not come from the caller
-	if (!(sig && *sig)) {
-		// Frees the memory
-		if (ret) LIBEC_SIGNATURE_free(ret);
-		// Fixes the output
-		*sig = NULL;
-	}
+  // Frees memory only if it did not come from the caller
+  if (!(sig && *sig)) {
+    // Frees the memory
+    if (ret) LIBEC_SIGNATURE_free(ret);
+    // Fixes the output
+    *sig = NULL;
+  }
 
-	if (!(ctx && *ctx)) {
-		// Frees the memory
-		if (inner_ctx) LIBEC_CTX_free(inner_ctx);
-		// Fixes the output
-		*ctx = NULL;
-	}
+  if (!(ctx && *ctx)) {
+    // Frees the memory
+    if (inner_ctx) LIBEC_CTX_free(inner_ctx);
+    // Fixes the output
+    *ctx = NULL;
+  }
 
-	// Returns the error
-	return NULL;
+  // Returns the error
+  return NULL;
 }
 
 LIBEC_CTX * LIBEC_verify_init(LIBEC_CTX             ** ctx,
@@ -2698,131 +2698,131 @@ LIBEC_CTX * LIBEC_verify_init(LIBEC_CTX             ** ctx,
                               const unsigned char    * data,
                               size_t                   data_size) {
 
-	LIBEC_CTX * ret = NULL;
-		// Return CTX
+  LIBEC_CTX * ret = NULL;
+    // Return CTX
 
-	LIBEC_DIGEST_ALG a_dgst = 0;
-	LIBEC_ALGOR a_algor     = 0;
-		// Signature's algorithms
+  LIBEC_DIGEST_ALG a_dgst = 0;
+  LIBEC_ALGOR a_algor     = 0;
+    // Signature's algorithms
 
   // const EVP_MD * md = _get_evp_md(LIBEC_DIGEST_ALG_DEFAULT);
     // HMAC Message Digest
 
-	// Input Check
-	if (!sig || !key) return NULL;
+  // Input Check
+  if (!sig || !key) return NULL;
 
-	// Creates the context
-	if (ctx && *ctx) {
-		// Gets the Pointer to already initialized structure
-		// (can be useful to re-use without needed re-allocation
-		ret = *ctx;
-		// Cleanup the context
-		LIBEC_CTX_cleanup(ret);
-	} else {
-		// Let's make sure we have a good memory allocation
-		if ((ret = LIBEC_CTX_new()) == NULL) {
-			// If we can not allocate a new CTX, let's return NULL
-			goto err;
-		}
-	}
+  // Creates the context
+  if (ctx && *ctx) {
+    // Gets the Pointer to already initialized structure
+    // (can be useful to re-use without needed re-allocation
+    ret = *ctx;
+    // Cleanup the context
+    LIBEC_CTX_cleanup(ret);
+  } else {
+    // Let's make sure we have a good memory allocation
+    if ((ret = LIBEC_CTX_new()) == NULL) {
+      // If we can not allocate a new CTX, let's return NULL
+      goto err;
+    }
+  }
 
-	// Attaches a reference to the key and the signature
-	ret->sig = sig;
-	ret->key = key;
+  // Attaches a reference to the key and the signature
+  ret->sig = sig;
+  ret->key = key;
 
-	// Gets the Hash Algor to use
-	if (0 == LIBEC_SIGNATURE_algor(&a_algor, &a_dgst, sig)) goto err;
+  // Gets the Hash Algor to use
+  if (0 == LIBEC_SIGNATURE_algor(&a_algor, &a_dgst, sig)) goto err;
 
   switch (key->type) {
 
-		// ASYMMETRIC signature
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
+    // ASYMMETRIC signature
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
 
-			// Checks we have a pkey
-			if (!key->pkey) goto err;
+      // Checks we have a pkey
+      if (!key->pkey) goto err;
 
-			// Initializes / Resets the Context
-			EVP_MD_CTX_init(ret->md_ctx);
+      // Initializes / Resets the Context
+      EVP_MD_CTX_init(ret->md_ctx);
 
-	    // Returns '1' if success
-	    if (1 != EVP_VerifyInit_ex(ret->md_ctx, _get_evp_md(a_dgst), NULL)) goto err;
+      // Returns '1' if success
+      if (1 != EVP_VerifyInit_ex(ret->md_ctx, _get_evp_md(a_dgst), NULL)) goto err;
 
-	    // Let's update the MD
-	    if (data && data_size && EVP_VerifyUpdate(ret->md_ctx, data, (int)data_size) != 1) {
-		    // Error, let's free and return Error
-		    goto err;
-	    }
+      // Let's update the MD
+      if (data && data_size && EVP_VerifyUpdate(ret->md_ctx, data, (int)data_size) != 1) {
+        // Error, let's free and return Error
+        goto err;
+      }
 
-		} break;
+    } break;
 
-		// SYMMETRIC signature (HMAC)
-		case LIBEC_KEY_TYPE_SYMMETRIC: {
+    // SYMMETRIC signature (HMAC)
+    case LIBEC_KEY_TYPE_SYMMETRIC: {
 
-			// Checks we have the symmetric key
-			if (!key->skey.data_size) goto err;
+      // Checks we have the symmetric key
+      if (!key->skey.data_size) goto err;
 
-	    // Initializes the HMAC_CTX structure
-	    HMAC_CTX_init(ret->hmac_ctx);
+      // Initializes the HMAC_CTX structure
+      HMAC_CTX_init(ret->hmac_ctx);
 
-	    // Initialize the Context
+      // Initialize the Context
 #if OPENSSL_VERSION_NUMBER < 0x0090899fL // OPENSSL VERSION < 0.9.9
-	    HMAC_Init_ex(ret->hmac_ctx, ret, key->skey.data, (int)key->skey.data_size,
+      HMAC_Init_ex(ret->hmac_ctx, ret, key->skey.data, (int)key->skey.data_size,
         _get_evp_md(a_dgst), (ENGINE *)NULL);
 #else
-	    if (!HMAC_Init_ex(ret->hmac_ctx, key->skey.data, (int)key->skey.data_size,
+      if (!HMAC_Init_ex(ret->hmac_ctx, key->skey.data, (int)key->skey.data_size,
         _get_evp_md(a_dgst), (ENGINE *)NULL)) goto err;
 #endif
-	    // Updates the Context
-	    if (data && data_size && HMAC_Update(ret->hmac_ctx, data, data_size) != 1) {
-	    	// Error, let's free and return Error
-	    	goto err;
-	    }
+      // Updates the Context
+      if (data && data_size && HMAC_Update(ret->hmac_ctx, data, data_size) != 1) {
+        // Error, let's free and return Error
+        goto err;
+      }
 
-		} break;
+    } break;
 
-		default: {
-			// Unknown key type
-			goto err;
-		} break;
-	}
+    default: {
+      // Unknown key type
+      goto err;
+    } break;
+  }
 
-	// Assigns the structure to the output param
-	if (ctx) *ctx = ret;
+  // Assigns the structure to the output param
+  if (ctx) *ctx = ret;
 
-	// All Done
-	return ret;
+  // All Done
+  return ret;
 
 err:
 
-	// Output Setup
-	if (!(ctx && *ctx)) {
-		// Fixes the output parameters
-		*ctx = NULL;
-		// Free Memory
-		if (ret) LIBEC_CTX_free(ret);
-	}
+  // Output Setup
+  if (!(ctx && *ctx)) {
+    // Fixes the output parameters
+    *ctx = NULL;
+    // Free Memory
+    if (ret) LIBEC_CTX_free(ret);
+  }
 
-	// Returns Nothing
-	return NULL;
+  // Returns Nothing
+  return NULL;
 }
 
-int LIBEC_verify_update(LIBEC_CTX     * ctx,
-                              const unsigned char * data,
-                              size_t                data_size) {
+int LIBEC_verify_update(LIBEC_CTX           * ctx,
+                        const unsigned char * data,
+                        size_t                data_size) {
 
-	// Input Check
-	if (!ctx || !ctx->md_ctx || !data || !data_size || data_size >= INT_MAX) return 0;
+  // Input Check
+  if (!ctx || !ctx->md_ctx || !data || !data_size || data_size >= INT_MAX) return 0;
 
   switch (ctx->key->type) {
 
-		// ASYMMETRIC signature
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
+    // ASYMMETRIC signature
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
 
       // Checks we have a good context
       if (!ctx->md_ctx) return 0;
 
-    	// Updates the Digest
-	    return EVP_VerifyUpdate(ctx->md_ctx, data, (int)data_size);
+      // Updates the Digest
+      return EVP_VerifyUpdate(ctx->md_ctx, data, (int)data_size);
 
     } break;
 
@@ -2846,9 +2846,9 @@ int LIBEC_verify_update(LIBEC_CTX     * ctx,
 
 int LIBEC_verify_final(LIBEC_CTX * ctx) {
 
-	const unsigned char * tmp = NULL;
-	unsigned int tmp_len = 0;
-		// Signature Max Length
+  const unsigned char * tmp = NULL;
+  unsigned int tmp_len = 0;
+    // Signature Max Length
 
   unsigned char buf[EVP_MAX_MD_SIZE];
   unsigned int hmac_size = 0;
@@ -2857,31 +2857,31 @@ int LIBEC_verify_final(LIBEC_CTX * ctx) {
   int rc = 0;
     // Return Code
 
-	// Input Check
-	if (!ctx || !ctx->key || !ctx->sig) return 0;
+  // Input Check
+  if (!ctx || !ctx->key || !ctx->sig) return 0;
 
-	// Uses the correct type
-	tmp_len = (int) LIBEC_SIGNATURE_value(&tmp, ctx->sig);
+  // Uses the correct type
+  tmp_len = (int) LIBEC_SIGNATURE_value(&tmp, ctx->sig);
 
   switch (ctx->key->type) {
 
-		// ASYMMETRIC signature
-		case LIBEC_KEY_TYPE_ASYMMETRIC: {
+    // ASYMMETRIC signature
+    case LIBEC_KEY_TYPE_ASYMMETRIC: {
 
       // Checks we have a good context
       if (!ctx->md_ctx) goto err;
 
-	    // Finalizes the Signature Verify
-	    if ((rc = EVP_VerifyFinal(ctx->md_ctx, tmp, tmp_len, ctx->key->pkey)) != 1) goto err;
+      // Finalizes the Signature Verify
+      if ((rc = EVP_VerifyFinal(ctx->md_ctx, tmp, tmp_len, ctx->key->pkey)) != 1) goto err;
 
     } break;
 
 
-		// SYMMETRIC signature (HMAC)
-		case LIBEC_KEY_TYPE_SYMMETRIC: {
+    // SYMMETRIC signature (HMAC)
+    case LIBEC_KEY_TYPE_SYMMETRIC: {
 
-			// Checks we have the symmetric key
-			if (!ctx->key->skey.data_size) goto err;
+      // Checks we have the symmetric key
+      if (!ctx->key->skey.data_size) goto err;
 
       // Extracts the right size
       if ((hmac_size = (unsigned int) HMAC_size(ctx->hmac_ctx)) <= 0) goto err;
@@ -2918,10 +2918,10 @@ err:
 }
 
 int LIBEC_verify(LIBEC_CTX             ** ctx,
-                       const LIBEC_SIGNATURE  * sig,
-                       const LIBEC_KEY        * key,
-                       const unsigned char          * data,
-                       size_t                         data_size) {
+                 const LIBEC_SIGNATURE  * sig,
+                 const LIBEC_KEY        * key,
+                 const unsigned char    * data,
+                 size_t                   data_size) {
 
   int rc = 0;
     // Return Code
@@ -2951,52 +2951,52 @@ int LIBEC_verify(LIBEC_CTX             ** ctx,
 // ================
 
 LIBEC_KEY * LIBEC_ecdh_derive(LIBEC_KEY       ** key,
-                                          const LIBEC_KEY  * my,
-                                          const LIBEC_KEY  * other) {
+                              const LIBEC_KEY  * my,
+                              const LIBEC_KEY  * other) {
 
-	LIBEC_KEY * ret = NULL;
-		// Return data structure
+  LIBEC_KEY * ret = NULL;
+    // Return data structure
 
-	EVP_PKEY_CTX * ctx = NULL;
-		// Key Derivation Context
+  EVP_PKEY_CTX * ctx = NULL;
+    // Key Derivation Context
 
-	unsigned char buf[EVP_MAX_KEY_LENGTH];
-	size_t buf_size = 0;
+  unsigned char buf[EVP_MAX_KEY_LENGTH];
+  size_t buf_size = 0;
 
-	// Input Check
-	if (!my || !my->pkey || !other || !other->pkey) return NULL;
+  // Input Check
+  if (!my || !my->pkey || !other || !other->pkey) return NULL;
 
-	// Checks we have the right types
-	if (my->pkey->type != EVP_PKEY_EC || other->pkey->type != EVP_PKEY_EC) return NULL;
+  // Checks we have the right types
+  if (my->pkey->type != EVP_PKEY_EC || other->pkey->type != EVP_PKEY_EC) return NULL;
 
-	// Creates the context
-	if (key && *key) {
-		// Gets the Pointer to already initialized structure
-		// (can be useful to re-use without needed re-allocation
-		ret = *key;
-		// Cleanup the context
-		LIBEC_KEY_cleanup(ret);
-	} else {
-		// Let's make sure we have a good memory allocation
-		if ((ret = LIBEC_KEY_new()) == NULL) {
-			// If we can not allocate a new CTX, let's return NULL
-			return NULL;
-		}
-		// Assigns the structure to the output param
-		if (key) *key = ret;
-	}
+  // Creates the context
+  if (key && *key) {
+    // Gets the Pointer to already initialized structure
+    // (can be useful to re-use without needed re-allocation
+    ret = *key;
+    // Cleanup the context
+    LIBEC_KEY_cleanup(ret);
+  } else {
+    // Let's make sure we have a good memory allocation
+    if ((ret = LIBEC_KEY_new()) == NULL) {
+      // If we can not allocate a new CTX, let's return NULL
+      return NULL;
+    }
+    // Assigns the structure to the output param
+    if (key) *key = ret;
+  }
 
-	// Sets the Key Details
-	ret->type = LIBEC_KEY_TYPE_SYMMETRIC;
+  // Sets the Key Details
+  ret->type = LIBEC_KEY_TYPE_SYMMETRIC;
 
-	// Creates a new context for key derivation
-	if ((ctx = EVP_PKEY_CTX_new(my->pkey, NULL)) != NULL) {
-		// Initializes the key derivation
-		if (1 == EVP_PKEY_derive_init(ctx)) {
-			// Gets the Size of the to-be-derived key
-			if (1 == EVP_PKEY_derive_set_peer(ctx, other->pkey)) {
-				// Gets the size of the required memory
-				if (1 == EVP_PKEY_derive(ctx, NULL, &buf_size)) {
+  // Creates a new context for key derivation
+  if ((ctx = EVP_PKEY_CTX_new(my->pkey, NULL)) != NULL) {
+    // Initializes the key derivation
+    if (1 == EVP_PKEY_derive_init(ctx)) {
+      // Gets the Size of the to-be-derived key
+      if (1 == EVP_PKEY_derive_set_peer(ctx, other->pkey)) {
+        // Gets the size of the required memory
+        if (1 == EVP_PKEY_derive(ctx, NULL, &buf_size)) {
           // Derive the symmetric key
           if (1 == EVP_PKEY_derive(ctx, buf, &buf_size)) {
             // Use SHA-512 to generate enough bits for any Symmetric key
@@ -3008,22 +3008,22 @@ LIBEC_KEY * LIBEC_ecdh_derive(LIBEC_KEY       ** key,
               return ret;
             }
           }
-				}
-			}
-		}
-	}
+        }
+      }
+    }
+  }
 
-	// Free the allocated memory
-	if (ctx) EVP_PKEY_CTX_free(ctx);
+  // Free the allocated memory
+  if (ctx) EVP_PKEY_CTX_free(ctx);
 
-	// Fixes the output parameters
-	if (!(key && *key)) {
-		if (ret) LIBEC_KEY_free(ret);
-		*key = NULL;
-	}
+  // Fixes the output parameters
+  if (!(key && *key)) {
+    if (ret) LIBEC_KEY_free(ret);
+    *key = NULL;
+  }
 
-	// Error Condition
-	return NULL;
+  // Error Condition
+  return NULL;
 }
 
 
@@ -3077,102 +3077,102 @@ void LIBEC_ENCRYPTED_cleanup(LIBEC_ENCRYPTED * enc) {
   return;
 }
 
-int LIBEC_ENCRYPTED_encode(unsigned char               ** data,
-								                 size_t                       * size,
-								                 const LIBEC_ENCRYPTED  * enc) {
+int LIBEC_ENCRYPTED_encode(unsigned char         ** data,
+                           size_t                 * size,
+                           const LIBEC_ENCRYPTED  * enc) {
 
-	int i = 0;
-	unsigned char * tmp = 0;
+  int i = 0;
+  unsigned char * tmp = 0;
 
-	// Input Checks
-	if (!data || !size || !enc) return 0;
+  // Input Checks
+  if (!data || !size || !enc) return 0;
 
-	// Gets the encoded size
-	if ((i = i2d_LIBEC_ENCRYPTED((LIBEC_ENCRYPTED  *)enc, NULL)) < 1) return 0;
+  // Gets the encoded size
+  if ((i = i2d_LIBEC_ENCRYPTED((LIBEC_ENCRYPTED  *)enc, NULL)) < 1) return 0;
 
-	// Allocates the right space
-	if ((*data = OPENSSL_malloc(i)) == NULL) return 0;
+  // Allocates the right space
+  if ((*data = OPENSSL_malloc(i)) == NULL) return 0;
 
-	// Encodes the value
-	tmp = *data;
-	if ((i = i2d_LIBEC_ENCRYPTED((LIBEC_ENCRYPTED  *)enc, &tmp)) <= 0) {
-		OPENSSL_free(*data);
-		return 0;
-	}
+  // Encodes the value
+  tmp = *data;
+  if ((i = i2d_LIBEC_ENCRYPTED((LIBEC_ENCRYPTED  *)enc, &tmp)) <= 0) {
+    OPENSSL_free(*data);
+    return 0;
+  }
 
-	// Sets the output value for the size
-	*size = i;
+  // Sets the output value for the size
+  *size = i;
 
-	// Returns success
-	return 1;
+  // Returns success
+  return 1;
 }
 
-LIBEC_ENCRYPTED * LIBEC_ENCRYPTED_decode(LIBEC_ENCRYPTED ** enc,
-													                           const unsigned char   ** next,
-													                           const unsigned char    * data,
-													                           size_t                   size) {
+LIBEC_ENCRYPTED * LIBEC_ENCRYPTED_decode(LIBEC_ENCRYPTED     ** enc,
+                                         const unsigned char ** next,
+                                         const unsigned char  * data,
+                                         size_t                 size) {
 
-	LIBEC_ENCRYPTED * ret = NULL;
-	const unsigned char *p = data;
+  LIBEC_ENCRYPTED * ret = NULL;
+  const unsigned char *p = data;
 
-	// Input Check
-	if (!data && !size) return NULL;
+  // Input Check
+  if (!data && !size) return NULL;
 
-	// Decode the Structure
-	if ((ret = d2i_LIBEC_ENCRYPTED(enc, &p, size)) == NULL) return NULL;
+  // Decode the Structure
+  if ((ret = d2i_LIBEC_ENCRYPTED(enc, &p, size)) == NULL) return NULL;
 
-	// Adjust the output parameters
-	if (next) *next = p;
+  // Adjust the output parameters
+  if (next) *next = p;
 
-	// Success
-	return ret;
+  // Success
+  return ret;
 }
 
 int LIBEC_ENCRYPTED_algor(LIBEC_ENC_ALG         * algor,
-								                LIBEC_ENC_MODE        * mode,
-								                const LIBEC_ENCRYPTED * enc) {
+                          LIBEC_ENC_MODE        * mode,
+                          const LIBEC_ENCRYPTED * enc) {
 
-	// Input Check
-	if (!enc || !enc->value || !enc->value->data || enc->value->length < 1)
-		return 0;
+  // Input Check
+  if (!enc || !enc->value || !enc->value->data || enc->value->length < 1)
+    return 0;
 
-	// Let's save the output parameters
-	*algor = enc->value->data[0] & LIBEC_ENC_ALG_MASK;
-	*mode  = enc->value->data[0] & LIBEC_ENC_MODE_MASK;
+  // Let's save the output parameters
+  *algor = enc->value->data[0] & LIBEC_ENC_ALG_MASK;
+  *mode  = enc->value->data[0] & LIBEC_ENC_MODE_MASK;
 
-	// Success, returns the combined algorithm identifier
-	return (uint8_t) enc->value->data[0];
+  // Success, returns the combined algorithm identifier
+  return (uint8_t) enc->value->data[0];
 }
 
-size_t LIBEC_ENCRYPTED_value(const unsigned char         ** data,
-								                   const LIBEC_ENCRYPTED  * enc) {
-	// Input Check
-	if (!enc || !enc->value || !enc->value->data) return 0;
+size_t LIBEC_ENCRYPTED_value(const unsigned char   ** data,
+                             const LIBEC_ENCRYPTED  * enc) {
+  // Input Check
+  if (!enc || !enc->value || !enc->value->data) return 0;
 
-	// Sets the output pointer (after the prefix)
-	if (data) *data = enc->value->data + LIBEC_ENCRYPTED_PREFIX_SIZE;
+  // Sets the output pointer (after the prefix)
+  if (data) *data = enc->value->data + LIBEC_ENCRYPTED_PREFIX_SIZE;
 
-	// Returns the size (minus the prefix len)
-	return (size_t) enc->value->length - LIBEC_ENCRYPTED_PREFIX_SIZE;
+  // Returns the size (minus the prefix len)
+  return (size_t) enc->value->length - LIBEC_ENCRYPTED_PREFIX_SIZE;
 }
 
-size_t LIBEC_ENCRYPTED_identifier(const unsigned char        ** data,
-                                        LIBEC_DIGEST_ALG      * dgst_alg,
-                                        const LIBEC_ENCRYPTED * enc) {
+size_t LIBEC_ENCRYPTED_identifier(const unsigned char   ** data,
+                                  LIBEC_DIGEST_ALG       * dgst_alg,
+                                  const LIBEC_ENCRYPTED  * enc) {
 
-	// Input Check
-	if (!enc || !enc->keyIdentifier) return 0;
+  // Input Check
+  if (!enc || !enc->keyIdentifier) return 0;
 
-	// Returns the values via the auxillary function
-	return _get_identifier(data, dgst_alg, enc->keyIdentifier);
+  // Returns the values via the auxillary function
+  return _get_identifier(data, dgst_alg, enc->keyIdentifier);
 }
 
-LIBEC_CTX * LIBEC_encrypt_init(LIBEC_CTX      ** ctx,
-										                       const LIBEC_KEY * d_key,
-                                           LIBEC_ENC_ALG     algor,
-										                       LIBEC_ENC_MODE    mode,
-										                       const unsigned char   * data,
-										                       size_t                  data_size) {
+LIBEC_CTX * LIBEC_encrypt_init(LIBEC_CTX           ** ctx,
+                               const LIBEC_KEY      * d_key,
+                               LIBEC_ENC_ALG          algor,
+                               LIBEC_ENC_MODE         mode,
+                               const unsigned char  * data,
+                               size_t                 data_size) {
 
   LIBEC_CTX * ret = NULL;
     // Return Structure
@@ -3194,25 +3194,25 @@ LIBEC_CTX * LIBEC_encrypt_init(LIBEC_CTX      ** ctx,
   int outl = 0;
     // Encrypted Data Size
 
-	// Input Check
-	if (!d_key) return NULL;
+  // Input Check
+  if (!d_key) return NULL;
 
-	// Creates the context
-	if (ctx && *ctx) {
-		// Gets the Pointer to already initialized structure
-		// (can be useful to re-use without needed re-allocation
-		ret = *ctx;
-		// Cleanup the context
-		LIBEC_CTX_cleanup(ret);
-	} else {
-		// Let's make sure we have a good memory allocation
-		if ((ret = LIBEC_CTX_new()) == NULL) {
-			// If we can not allocate a new CTX, let's return NULL
-			goto err;
-		}
-	}
+  // Creates the context
+  if (ctx && *ctx) {
+    // Gets the Pointer to already initialized structure
+    // (can be useful to re-use without needed re-allocation
+    ret = *ctx;
+    // Cleanup the context
+    LIBEC_CTX_cleanup(ret);
+  } else {
+    // Let's make sure we have a good memory allocation
+    if ((ret = LIBEC_CTX_new()) == NULL) {
+      // If we can not allocate a new CTX, let's return NULL
+      goto err;
+    }
+  }
 
-	// Encrypts the Key
+  // Encrypts the Key
   if (NULL == _encrypt_key(&o_pnt, &enc_key, &enc_key_size, d_key, algor, mode)) goto err;
 
   // Initializes the data encryption
@@ -3276,9 +3276,9 @@ err:
   return NULL;
 }
 
-int LIBEC_encrypt_update(LIBEC_CTX     * ctx,
-				                       const unsigned char * data,
-				                       size_t                data_size) {
+int LIBEC_encrypt_update(LIBEC_CTX                 * ctx,
+                               const unsigned char * data,
+                               size_t                data_size) {
 
   int outl;
     // Written Encrypted Data
@@ -3322,7 +3322,7 @@ int LIBEC_encrypt_update(LIBEC_CTX     * ctx,
 }
 
 LIBEC_ENCRYPTED * LIBEC_encrypt_final(LIBEC_ENCRYPTED ** enc,
-						                          LIBEC_CTX        * ctx) {
+                                      LIBEC_CTX        * ctx) {
 
   LIBEC_ENCRYPTED * ret = NULL;
     // Return Structure
@@ -3393,13 +3393,13 @@ err:
   return NULL;
 }
 
-LIBEC_ENCRYPTED * LIBEC_encrypt(LIBEC_CTX       ** ctx,
-                                            LIBEC_ENCRYPTED ** enc,
-		                                        LIBEC_KEY        * key,
-		                                        LIBEC_ENC_ALG      algor,
-											                      LIBEC_ENC_MODE     mode,
-											                      const unsigned char    * data,
-											                      size_t                   data_size) {
+LIBEC_ENCRYPTED * LIBEC_encrypt(LIBEC_CTX          ** ctx,
+                                LIBEC_ENCRYPTED    ** enc,
+                                LIBEC_KEY           * key,
+                                LIBEC_ENC_ALG         algor,
+                                LIBEC_ENC_MODE        mode,
+                                const unsigned char * data,
+                                size_t                data_size) {
 
   LIBEC_ENCRYPTED * ret = NULL;
     // Return Structure
@@ -3459,14 +3459,14 @@ err:
   return NULL;
 }
 
-LIBEC_CTX * LIBEC_encrypt_sym_direct(LIBEC_CTX       ** ctx,
-                                                 unsigned char         ** enc_data,
-                                                 size_t                 * enc_data_size,
-                                                 LIBEC_KEY        * key,
-                                                 LIBEC_ENC_ALG      algor,
-                                                 LIBEC_ENC_MODE     mode,
-                                                 const unsigned char    * data,
-                                                 size_t                   data_size) {
+LIBEC_CTX * LIBEC_encrypt_sym_direct(LIBEC_CTX           ** ctx,
+                                     unsigned char       ** enc_data,
+                                     size_t               * enc_data_size,
+                                     LIBEC_KEY            * key,
+                                     LIBEC_ENC_ALG          algor,
+                                     LIBEC_ENC_MODE         mode,
+                                     const unsigned char  * data,
+                                     size_t                 data_size) {
 
   LIBEC_CTX * ret = NULL;
     // Return Structure
@@ -3568,10 +3568,10 @@ err:
 }
 
 LIBEC_CTX * LIBEC_decrypt_init(LIBEC_CTX             ** ctx,
-                                           unsigned char               ** buffer,
-                                           size_t                       * buffer_size,
-                                           const LIBEC_ENCRYPTED  * enc,
-                                           const LIBEC_KEY        * key) {
+                               unsigned char         ** buffer,
+                               size_t                 * buffer_size,
+                               const LIBEC_ENCRYPTED  * enc,
+                               const LIBEC_KEY        * key) {
 
   LIBEC_CTX * ret = NULL;
     // Return Structure
@@ -3607,8 +3607,8 @@ LIBEC_CTX * LIBEC_decrypt_init(LIBEC_CTX             ** ctx,
 
   // Checks we have the right key
   if (NULL == LIBEC_KEY_identifier(&dgst,
-                                          key,
-                                          LIBEC_DIGEST_algor(enc->keyIdentifier))) goto err;
+                                    key,
+                                    LIBEC_DIGEST_algor(enc->keyIdentifier))) goto err;
 
   // Compares the key Identifier
   if (0 != LIBEC_DIGEST_cmp(dgst, enc->keyIdentifier)) goto err;
@@ -3676,10 +3676,10 @@ err:
   return NULL;
 }
 
-int LIBEC_decrypt_update(unsigned char               ** data,      /* OUT    */
-				                       size_t                       * data_size, /* IN/OUT */
-				                       const LIBEC_ENCRYPTED  * enc,       /* Unused */
-				                       LIBEC_CTX              * ctx) {
+int LIBEC_decrypt_update(unsigned char         ** data,      /* OUT    */
+                         size_t                 * data_size, /* IN/OUT */
+                         const LIBEC_ENCRYPTED  * enc,       /* Unused */
+                         LIBEC_CTX              * ctx) {
 
   unsigned char * buffer = NULL;
   int decrypted = 0;
@@ -3739,9 +3739,9 @@ err:
   return -1;
 }
 
-int LIBEC_decrypt_final(unsigned char    ** data,
-							                size_t 	          * size,
-							                LIBEC_CTX 	* ctx) {
+int LIBEC_decrypt_final(unsigned char ** data,
+                        size_t         * size,
+                        LIBEC_CTX      * ctx) {
 
   // Input Check
   if (!ctx || !ctx->dec_data || !ctx->dec_data_size || !data || !*data || !size)
@@ -3769,10 +3769,10 @@ err:
 }
 
 LIBEC_CTX * LIBEC_decrypt(LIBEC_CTX             ** ctx,
-                                      unsigned char               ** data,
-                                      size_t                       * size,
-                                      const LIBEC_ENCRYPTED  * enc,
-                                      const LIBEC_KEY        * key) {
+                          unsigned char         ** data,
+                          size_t                 * size,
+                          const LIBEC_ENCRYPTED  * enc,
+                          const LIBEC_KEY        * key) {
 
   LIBEC_CTX * ret = NULL;
     // Return Structure
@@ -3798,12 +3798,12 @@ err:
   return 0;
 }
 
-LIBEC_CTX * LIBEC_decrypt_sym_direct(LIBEC_CTX       ** ctx,
-                                                 unsigned char         ** data,
-                                                 size_t                 * data_size,
-                                                 const unsigned char    * enc,
-                                                 size_t                   enc_size,
-                                                 const LIBEC_KEY  * key) {
+LIBEC_CTX * LIBEC_decrypt_sym_direct(LIBEC_CTX           ** ctx,
+                                     unsigned char       ** data,
+                                     size_t               * data_size,
+                                     const unsigned char  * enc,
+                                     size_t                 enc_size,
+                                     const LIBEC_KEY      * key) {
 
   LIBEC_CTX * ret = NULL;
     // Return Structure

@@ -276,24 +276,24 @@ void LIBEC_CTX_free(LIBEC_CTX * ctx);
 
 void LIBEC_DIGEST_cleanup(LIBEC_DIGEST * x);
 
-LIBEC_DIGEST * LIBEC_DIGEST_new(LIBEC_DIGEST     ** dgst,
-                                            LIBEC_DIGEST_ALG    md,
-                                            const unsigned char     * data,
-                                            size_t                    size);
+LIBEC_DIGEST * LIBEC_DIGEST_new(LIBEC_DIGEST        ** dgst,
+                                LIBEC_DIGEST_ALG       md,
+                                const unsigned char  * data,
+                                size_t                 size);
 
-int LIBEC_DIGEST_encode(unsigned char            ** data,
-                              size_t                    * size,
-                              const LIBEC_DIGEST  * dgst);
+int LIBEC_DIGEST_encode(unsigned char      ** data,
+                        size_t              * size,
+                        const LIBEC_DIGEST  * dgst);
 
-LIBEC_DIGEST * LIBEC_DIGEST_decode(LIBEC_DIGEST  ** dgst,
-                                               const unsigned char ** next,
-                                               const unsigned char  * data,
-                                               size_t                 size);
+LIBEC_DIGEST * LIBEC_DIGEST_decode(LIBEC_DIGEST        ** dgst,
+                                   const unsigned char ** next,
+                                   const unsigned char  * data,
+                                   size_t                 size);
 
 LIBEC_DIGEST_ALG LIBEC_DIGEST_algor(const LIBEC_DIGEST *dgst);
 
-size_t LIBEC_DIGEST_value(const unsigned char       ** data,
-                                const LIBEC_DIGEST   * dgst);
+size_t LIBEC_DIGEST_value(const unsigned char ** data,
+                          const LIBEC_DIGEST   * dgst);
 
 // =====================
 // Crypto Key Management
@@ -302,34 +302,34 @@ size_t LIBEC_DIGEST_value(const unsigned char       ** data,
 LIBEC_KEY * LIBEC_KEY_new();
 
 LIBEC_KEY * LIBEC_KEY_gen_ec(LIBEC_KEY      ** key,
-                                         LIBEC_EC_CURVE    curve);
+                             LIBEC_EC_CURVE    curve);
 
 LIBEC_KEY * LIBEC_KEY_gen_rsa(LIBEC_KEY      ** key,
-                                          LIBEC_RSA_SIZE    bits);
+                              LIBEC_RSA_SIZE    bits);
 
 LIBEC_KEY * LIBEC_KEY_gen_aes(LIBEC_KEY      ** key,
-                                          LIBEC_AES_SIZE    bits);
+                              LIBEC_AES_SIZE    bits);
 
-int LIBEC_KEY_encode_public(unsigned char        ** data,
-                                  size_t                * data_size,
-                                  const LIBEC_KEY * key);
+int LIBEC_KEY_encode_public(unsigned char   ** data,
+                            size_t           * data_size,
+                            const LIBEC_KEY  * key);
 
-int LIBEC_KEY_encode_private(unsigned char        ** data,
-                                   size_t                * data_size,
-                                   const LIBEC_KEY * key);
+int LIBEC_KEY_encode_private(unsigned char   ** data,
+                             size_t           * data_size,
+                             const LIBEC_KEY  * key);
 
-LIBEC_KEY * LIBEC_KEY_decode_public(LIBEC_KEY     ** out_key,
-                                                const unsigned char  * data,
-                                                size_t                 data_size);
+LIBEC_KEY * LIBEC_KEY_decode_public(LIBEC_KEY           ** out_key,
+                                    const unsigned char  * data,
+                                    size_t                 data_size);
 
-LIBEC_KEY * LIBEC_KEY_decode_private(LIBEC_KEY      ** out_key,
-                                                 LIBEC_KEY_TYPE    type,
-                                                 const unsigned char   * data,
-                                                 size_t                  data_size);
+LIBEC_KEY * LIBEC_KEY_decode_private(LIBEC_KEY           ** out_key,
+                                     LIBEC_KEY_TYPE         type,
+                                     const unsigned char  * data,
+                                     size_t                 data_size);
 
 LIBEC_DIGEST * LIBEC_KEY_identifier(LIBEC_DIGEST    ** dgst,
-                                                const LIBEC_KEY  * key,
-                                                LIBEC_DIGEST_ALG   alg);
+                                    const LIBEC_KEY  * key,
+                                    LIBEC_DIGEST_ALG   alg);
 
 void LIBEC_KEY_cleanup(LIBEC_KEY * key);
 
@@ -345,31 +345,31 @@ void LIBEC_KEY_free(LIBEC_KEY * key);
     (a && a->value && b && b->value ? ASN1_OCTET_STRING_cmp(a->value,b->value) : 0)
   // Compares two SIGNATURE structures (algorithm and value)
 
-int LIBEC_SIGNATURE_encode(unsigned char               ** data,
-                                 size_t                       * size,
-                                 const LIBEC_SIGNATURE  * dgst);
+int LIBEC_SIGNATURE_encode(unsigned char         ** data,
+                           size_t                 * size,
+                           const LIBEC_SIGNATURE  * dgst);
 
-LIBEC_SIGNATURE * LIBEC_SIGNATURE_decode(LIBEC_SIGNATURE  ** dgst,
-                                                     const unsigned char    ** next,
-                                                     const unsigned char     * data,
-                                                     size_t                    size);
+LIBEC_SIGNATURE * LIBEC_SIGNATURE_decode(LIBEC_SIGNATURE     ** dgst,
+                                         const unsigned char ** next,
+                                         const unsigned char  * data,
+                                         size_t                 size);
 
 int LIBEC_SIGNATURE_algor(LIBEC_ALGOR           * algor,
-                                LIBEC_DIGEST_ALG      * dgst_alg,
-                                const LIBEC_SIGNATURE * sig);
+                          LIBEC_DIGEST_ALG      * dgst_alg,
+                          const LIBEC_SIGNATURE * sig);
 
-size_t LIBEC_SIGNATURE_value(const unsigned char         ** data,
-                                   const LIBEC_SIGNATURE  * dgst);
+size_t LIBEC_SIGNATURE_value(const unsigned char   ** data,
+                             const LIBEC_SIGNATURE  * dgst);
 
-size_t LIBEC_SIGNATURE_identifier(const unsigned char        ** data,
-                                        LIBEC_DIGEST_ALG      * dgst_alg,
-                                        const LIBEC_SIGNATURE * sig);
+size_t LIBEC_SIGNATURE_identifier(const unsigned char   ** data,
+                                  LIBEC_DIGEST_ALG       * dgst_alg,
+                                  const LIBEC_SIGNATURE  * sig);
 
-LIBEC_CTX * LIBEC_sign_init(LIBEC_CTX        ** ctx,
-                                        const LIBEC_KEY   * key,
-                                        LIBEC_DIGEST_ALG    dgst_alg,
-                                        const unsigned char     * data,
-                                        size_t                    data_size);
+LIBEC_CTX * LIBEC_sign_init(LIBEC_CTX           ** ctx,
+                            const LIBEC_KEY      * key,
+                            LIBEC_DIGEST_ALG       dgst_alg,
+                            const unsigned char  * data,
+                            size_t                 data_size);
   // Initializes and return an signature context ('ctx'). The
   // passed 'md' is the HASH algorithm to use for the signature
   // calculation (if 'NULL', the default value is SHA256). If
@@ -385,9 +385,9 @@ LIBEC_CTX * LIBEC_sign_init(LIBEC_CTX        ** ctx,
   // paramer, this will avoid the need for allocating the
   // memory for the data structure.
 
-int LIBEC_sign_update(LIBEC_CTX     * ctx,
-                            const unsigned char * data,
-                            size_t                data_size);
+int LIBEC_sign_update(LIBEC_CTX           * ctx,
+                      const unsigned char * data,
+                      size_t                data_size);
   // Updates the signature's context internal values by
   // updating the calculation of the HASH of the data for
   // final signature generation. Use this function when the
@@ -396,7 +396,7 @@ int LIBEC_sign_update(LIBEC_CTX     * ctx,
   // and '0' in case of error.
 
 LIBEC_SIGNATURE * LIBEC_sign_final(LIBEC_SIGNATURE ** sig,
-                                               LIBEC_CTX        * ctx);
+                                   LIBEC_CTX        * ctx);
   // Finalizes the singing operation and saves the signature
   // in the '*sig' buffer of 'sig_size' size (both 'sig' and
   // 'sig_size' are output parameters, i.e. the '*sig' buffer
@@ -404,19 +404,19 @@ LIBEC_SIGNATURE * LIBEC_sign_final(LIBEC_SIGNATURE ** sig,
   // in case of succes, and '0' otherwise.
 
 
-LIBEC_SIGNATURE * LIBEC_sign(LIBEC_CTX        ** ctx,
-                                         LIBEC_SIGNATURE  ** sig,
-                                         const LIBEC_KEY   * key,
-                                         LIBEC_DIGEST_ALG    dgst_alg,
-                                         const unsigned char     * data,
-                                         size_t                    data_size);
+LIBEC_SIGNATURE * LIBEC_sign(LIBEC_CTX           ** ctx,
+                             LIBEC_SIGNATURE     ** sig,
+                             const LIBEC_KEY      * key,
+                             LIBEC_DIGEST_ALG       dgst_alg,
+                             const unsigned char  * data,
+                             size_t                 data_size);
 
 
 LIBEC_CTX * LIBEC_verify_init(LIBEC_CTX             ** ctx,
-                                          const LIBEC_SIGNATURE  * sig,
-                                          const LIBEC_KEY        * key,
-                                          const unsigned char          * data,
-                                          size_t                         data_size);
+                              const LIBEC_SIGNATURE  * sig,
+                              const LIBEC_KEY        * key,
+                              const unsigned char    * data,
+                              size_t                   data_size);
   // Initializes the signature verification operation. The
   // passed 'md' is the HASH algorithm to use for the signature
   // calculation (if 'NULL', the default value is SHA256). If
